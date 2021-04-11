@@ -1,15 +1,15 @@
 create table category (
-    codename varchar(255) primary key,
+    codename varchar(255) primary key AUTOINCREMENT,
     name varchar(255)
 );
 
 create table reminder (
-    codename varchar(255) primary key,
+    id int primary key AUTOINCREMENT,
     name varchar(255),
     date_time datetime,
-    is_done boolean,
-    for_each int,
-    FOREIGN KEY(category_codename) REFERENCES category(codename)
+    is_done boolean default False,
+    for_each int default 0
+    -- FOREIGN KEY(category_codename) REFERENCES category(codename)
 );
 
 insert into category (codename, name)

@@ -3,6 +3,7 @@ import datetime
 import pytz
 
 import exceptions
+import db
 
 ram_saver = set()
 
@@ -10,36 +11,62 @@ ram_saver = set()
 class Reminder(NamedTuple):
     name: str
     date: str
-    # time: Optional[str]
     rem_type: str
 
 
-def add_reminder(message):
-   reminder = _parse_message(message)
-   ram_saver.add(reminder)
-   return reminder
+def add_reminder(message) -> Reminder:
+    reminder = _parse_message(message)
+#   ram_saver.add(reminder)
+    # category = Categories().get_category(
+    #     reminder.category_text)
+    temp = db.insert(
+        'reminder',
+        {
+            # 'category': reminder.rem_type,
+            'name': reminder.name,
+            'date_time': reminder.date
+        }
+    )
+    return reminder
 
 
 def get_all_reminders():
-    return f'all\n {ram_saver}'
+    """Возвращает последние несколько расходов"""
+    cursor = db.get_cursor()
+    cursor.execute(
+        "select * from reminder limit 10")
+    rows = cursor.fetchall()
+    # last_expenses = [Reminder(id=row[0], amount=row[1], category_name=row[2]) for row in rows]
+    return f'all\n {rows}'
 
 
 def get_permanent_reminders():
-    return f'perm\n {ram_saver}'
+    cursor = db.get_cursor()
+    cursor.execute(
+        "select * from reminder where category = 'perm' limit 10")
+    rows = cursor.fetchall()
+    return f'perm\n {rows}'
 
 
 def get_temporary_reminders():
-    return f'temp\n {ram_saver}'
+    cursor = db.get_cursor()
+    cursor.execute(
+        "select * from reminder where category = 'temp' limit 10")
+    rows = cursor.fetchall()
+    return f'temp\n {rows}'
 
 
 def delete_done_reminders():
-    ram_saver.clear()
+    db.clean_done('reminder')
     return 'cleaned'
 
 
 def delete_reminder(row_id):
-    ram_saver.remove(row_id)
-    return f'deleted reminder {row_id}'
+    try:
+        deleted = db.delete('reminder', row_id)
+    except exceptions.NotConsistInDB as e:
+        return str(e)
+    return f'deleted reminder {deleted}'
 
 
 def _get_now_formatted() -> str:

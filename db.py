@@ -3,6 +3,8 @@ from typing import Dict, List, Tuple
 
 import sqlite3
 
+import exceptions
+
 
 conn = sqlite3.connect(os.path.join("db", "reminders.db"))
 cursor = conn.cursor()
@@ -35,14 +37,21 @@ def fetchall(table: str, columns: List[str]) -> List[Tuple]:
 
 
 def clean_done(table: str) -> None:
-    cursor.execute(f"delete from {table} where is_done is True")
+    cursor.execute(f"delete from {table} where is_done = 1")
     conn.commit()
 
 
-def delete(table: str, row_id: int) -> None:
+def delete(table: str, row_id: int) -> Tuple:
     row_id = int(row_id)
-    cursor.execute(f"delete from {table} where id={row_id}")
-    conn.commit()
+    cursor.execute(f"SELECT * FROM {table} where id={row_id}")
+    to_delete = cursor.fetchone()
+
+    if to_delete is None:
+        raise exceptions.NotConsistInDB("this id db doesn't include")
+    else:
+        cursor.execute(f"delete from {table} where id={row_id}")
+        conn.commit()
+        return to_delete
 
 
 def get_cursor():
@@ -66,4 +75,4 @@ def check_db_exists():
         return
     _init_db()
 
-check_db_exists()
+# check_db_exists()
