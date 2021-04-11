@@ -1,11 +1,11 @@
-# import os
+import os
 from typing import Dict, List, Tuple
 
-# import sqlite3
+import sqlite3
 
 
-# conn = sqlite3.connect(os.path.join("db", "reminders.db"))
-# cursor = conn.cursor()
+conn = sqlite3.connect(os.path.join("db", "reminders.db"))
+cursor = conn.cursor()
 
 
 def insert(table: str, column_values: Dict):

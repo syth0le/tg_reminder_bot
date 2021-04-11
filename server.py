@@ -4,6 +4,8 @@ import os
 # import aiohttp
 from aiogram import Bot, Dispatcher, executor, types
 from dotenv import load_dotenv
+import aioschedule
+import asyncio
 
 
 from middleware import AccessMiddleware
@@ -46,7 +48,7 @@ async def temporary_reminders(message: types.Message):
     await message.answer(answer_message)
 
 
-@dp.message_handler(commands=['permanent'])
+@dp.message_handler(commands=['perm'])
 async def permanent_reminders(message: types.Message):
     """Отправляет сегодняшнюю статистику трат"""
     answer_message = reminders.get_permanent_reminders()
@@ -60,7 +62,7 @@ async def all_reminders(message: types.Message):
     await message.answer(answer_message)
 
 
-@dp.message_handler(commands=['clean'])
+@dp.message_handler(commands=['clear'])
 async def delete_done_reminders(message: types.Message):
     """Clean db and delete reminders which were done later"""
     answer_message = reminders.delete_done_reminders()
@@ -94,6 +96,18 @@ async def add_reminder_route(message: types.Message):
     #     f"{reminder.get_all()}")
     await message.answer(reminder)
 
+async def job():
+    await bot.send_message(chat_id=ACCESS_ID, text='**NOTIFICATION**')
+
+async def scheduler():
+    aioschedule.every(1).minutes.do(job)
+    while True:
+        await aioschedule.run_pending()
+        await asyncio.sleep(1)
+
+async def on_startup(_):
+    asyncio.create_task(scheduler())
+
 
 if __name__ == '__main__':
-    executor.start_polling(dp, skip_updates=True)
+    executor.start_polling(dp, skip_updates=False, on_startup=on_startup)
