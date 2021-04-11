@@ -1,17 +1,19 @@
 import logging
-# import os
+import os
 
 # import aiohttp
 from aiogram import Bot, Dispatcher, executor, types
+from dotenv import load_dotenv
 
 
 from middleware import AccessMiddleware
 import reminders
+import exceptions
 
-API_TOKEN = '1710520708:AAFA2N96qphf4sGCUIzOxzblk4GYNCfNVQI'
-ACCESS_ID = '276209120'
-# API_TOKEN = os.getenv("TELEGRAM_API_TOKEN")
-# ACCESS_ID = os.getenv("TELEGRAM_ACCESS_ID")
+load_dotenv()
+
+API_TOKEN = os.getenv("API_TOKEN")
+ACCESS_ID = os.getenv("ACCESS_ID")
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -33,15 +35,8 @@ async def send_welcome(message: types.Message):
         "список временных: /temp\n"
         "список постоянных: /permanent\n"
         "список полный: /all\n"
-        "удаление: /del")
-
-
-@dp.message_handler()
-async def echo(message: types.Message):
-    # old style:
-    # await bot.send_message(message.chat.id, message.text)
-
-    await message.answer(message.text)
+        "очистка от выполненных: /clean"
+        "удаление: /del идентификатор")
 
 
 @dp.message_handler(commands=['temp'])
@@ -67,9 +62,37 @@ async def all_reminders(message: types.Message):
 
 @dp.message_handler(commands=['clean'])
 async def delete_done_reminders(message: types.Message):
-    """Отправляет сегодняшнюю статистику трат"""
+    """Clean db and delete reminders which were done later"""
     answer_message = reminders.delete_done_reminders()
     await message.answer(answer_message)
+
+
+@dp.message_handler(lambda message: message.text.startswith('/del'))
+async def del_expense(message: types.Message):
+    """Delete only 1 reminder by identificator"""
+    try:
+        row_id = int(message.text[4:])
+    except ValueError:
+        await message.answer("Дядь, ну айдишник то передай а...")
+        return
+    answer_message = reminders.delete_reminder(row_id)
+    await message.answer(answer_message)
+
+
+@dp.message_handler()
+async def add_reminder_route(message: types.Message):
+    """Add new reminder or send message "NO ROUTE" information"""
+    # await message.answer("такого пути нет")
+
+    try:
+        reminder = reminders.add_reminder(message.text)
+    except exceptions.NotCorrectMessage as e:
+        await message.answer(str(e))
+        return
+    # answer_message = (
+    #     f"Added reminder {reminder.name}.\n\n"
+    #     f"{reminder.get_all()}")
+    await message.answer(reminder)
 
 
 if __name__ == '__main__':

@@ -9,17 +9,25 @@ class Reminder(NamedTuple):
     time: str
 
 
+def add_reminder(message):
+    return f'added new reminder {message}'
+
+
 def get_all_reminders():
-    pass
+    return 'all'
 
 
 def get_permanent_reminders():
-    pass
+    return 'perm'
 
 
 def get_temporary_reminders():
-    pass
+    return 'temp'
 
 
 def delete_done_reminders():
-    pass
+    return 'cleaned'
+
+
+def delete_reminder(row_id):
+    return f'deleted reminder {row_id}'
