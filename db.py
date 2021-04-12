@@ -54,7 +54,6 @@ def delete(table: str, row_id: int) -> Tuple:
         return to_delete
 
 def update(table: str, row_id: int) -> Tuple:
-# UPDATE Customers SET ContactName = 'Alfred Schmidt', City= 'Frankfurt' WHERE CustomerID = 1;
     row_id = int(row_id)
     cursor.execute(f"UPDATE {table} SET is_done=1 where id={row_id}")
     conn.commit()
@@ -64,6 +63,12 @@ def update(table: str, row_id: int) -> Tuple:
     if updated is None:
         raise exceptions.NotConsistInDB("this id db doesn't include")    
     return updated
+
+
+def find_by_date(table: str, date: str) -> List[Tuple]:
+    cursor.execute(f"SELECT * FROM {table} WHERE date_time = :date", {'date': date})
+    rows = cursor.fetchall()
+    return rows
 
 
 def get_cursor():

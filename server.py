@@ -6,11 +6,13 @@ from aiogram import Bot, Dispatcher, executor, types
 from dotenv import load_dotenv
 import aioschedule
 import asyncio
+import datetime
 
 
 from middleware import AccessMiddleware
 import reminders
 import exceptions
+import db
 
 load_dotenv()
 
@@ -95,22 +97,30 @@ async def add_task_to_done(message: types.Message):
 @dp.message_handler()
 async def add_reminder_route(message: types.Message):
     """Add new reminder or send message "NO ROUTE" information"""
-    # await message.answer("такого пути нет")
 
     try:
         reminder = reminders.add_reminder(message.text)
     except exceptions.NotCorrectMessage as e:
         await message.answer(str(e))
         return
-    # answer_message = (
-    #     f"Added reminder {reminder.name}.\n\n"
-    #     f"{reminder.get_all()}")
     await message.answer(reminder)
 
-
 async def job():
-    print("notification")
-    # await bot.send_message(chat_id=ACCESS_ID, text='**NOTIFICATION**')
+    local_time = str(datetime.datetime.now())[:-9] + "00"
+    reminders = db.find_by_date('reminder', local_time)
+    
+
+    if reminders:
+        print("notification", local_time)
+
+        last_reminders_rows = [
+            f"{reminder[1]} ({reminder[3]}) — нажми "
+            f"/done{reminder[0]} чтобы завершить "
+            for reminder in reminders]
+        answer_message = f"**NOTIFICATION**\n\n* " + "\n\n* "\
+                .join(last_reminders_rows)
+        
+        await bot.send_message(chat_id=ACCESS_ID, text=answer_message)
 
 async def scheduler():
     aioschedule.every(1).minutes.do(job)
@@ -120,7 +130,6 @@ async def scheduler():
 
 async def on_startup(_):
     asyncio.create_task(scheduler())
-
 
 if __name__ == '__main__':
     executor.start_polling(dp, skip_updates=False, on_startup=on_startup)

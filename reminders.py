@@ -1,6 +1,7 @@
 from typing import NamedTuple
 import datetime
 import pytz
+from dateutil.parser import parse
 
 import exceptions
 import db
@@ -22,13 +23,13 @@ def add_reminder(message) -> Reminder:
             'category': reminder.category
         }
     )
-    return reminder
+    return f'Created "{reminder.name}" on {reminder.date}'
 
 
 def get_all_reminders():
     cursor = db.get_cursor()
     cursor.execute(
-        "select * from reminder limit 10")
+        "select * from reminder order by date_time ASC limit 10 ")
     rows = cursor.fetchall()
     if not rows:
         return "No reminders in system"
@@ -40,7 +41,7 @@ def get_all_reminders():
 def get_permanent_reminders():
     cursor = db.get_cursor()
     cursor.execute(
-        "select * from reminder where category = 'perm' limit 10")
+        "select * from reminder where category = 'perm' order by date_time ASC limit 10 ")
     rows = cursor.fetchall()
     if not rows:
         return "No permanent reminders in system"
@@ -51,7 +52,7 @@ def get_permanent_reminders():
 def get_temporary_reminders():
     cursor = db.get_cursor()
     cursor.execute(
-        "select * from reminder where category = 'temp' limit 10")
+        "select * from reminder where category = 'temp' order by date_time ASC limit 10 ")
     rows = cursor.fetchall()
     if not rows:
         return "No temporary reminders in system"
@@ -97,7 +98,7 @@ def _parse_message(message) -> Reminder:
     try:
         category = data[0]
         name = data[1]
-        date = data[2]
+        date = parse(data[2], fuzzy=True)
     except IndexError:
         raise exceptions.NotCorrectMessage("can't parse this message")
 
