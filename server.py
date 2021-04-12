@@ -62,7 +62,7 @@ async def all_reminders(message: types.Message):
     await message.answer(answer_message)
 
 
-@dp.message_handler(commands=['clear'])
+@dp.message_handler(commands=['clean'])
 async def delete_done_reminders(message: types.Message):
     """Clean db and delete reminders which were done later"""
     answer_message = reminders.delete_done_reminders()
@@ -81,6 +81,17 @@ async def del_expense(message: types.Message):
     await message.answer(answer_message)
 
 
+@dp.message_handler(lambda message: message.text.startswith('/done'))
+async def add_task_to_done(message: types.Message):
+    """Delete only 1 reminder by identificator"""
+    try:
+        row_id = int(message.text[5:])
+    except ValueError:
+        await message.answer("Дядь, ну айдишник то передай а...")
+        return
+    answer_message = reminders.done_reminder(row_id)
+    await message.answer(answer_message)
+
 @dp.message_handler()
 async def add_reminder_route(message: types.Message):
     """Add new reminder or send message "NO ROUTE" information"""
@@ -96,8 +107,10 @@ async def add_reminder_route(message: types.Message):
     #     f"{reminder.get_all()}")
     await message.answer(reminder)
 
+
 async def job():
-    await bot.send_message(chat_id=ACCESS_ID, text='**NOTIFICATION**')
+    print("notification")
+    # await bot.send_message(chat_id=ACCESS_ID, text='**NOTIFICATION**')
 
 async def scheduler():
     aioschedule.every(1).minutes.do(job)

@@ -69,6 +69,15 @@ def delete_reminder(row_id):
     return f'deleted reminder {deleted}'
 
 
+def done_reminder(row_id):
+    # realize method put 
+    try:
+        updated = db.update('reminder', row_id)
+    except exceptions.NotConsistInDB as e:
+        return str(e)
+    return f'updated reminder {updated}'
+
+
 def _get_now_formatted() -> str:
     """returns data on str type"""
     return _get_now_datetime().strftime("%Y-%m-%d %H:%M:%S")

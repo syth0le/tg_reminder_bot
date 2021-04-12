@@ -53,6 +53,18 @@ def delete(table: str, row_id: int) -> Tuple:
         conn.commit()
         return to_delete
 
+def update(table: str, row_id: int) -> Tuple:
+# UPDATE Customers SET ContactName = 'Alfred Schmidt', City= 'Frankfurt' WHERE CustomerID = 1;
+    row_id = int(row_id)
+    cursor.execute(f"UPDATE {table} SET is_done=1 where id={row_id}")
+    conn.commit()
+
+    cursor.execute(f"SELECT * FROM {table} where id={row_id}")
+    updated = cursor.fetchone()
+    if updated is None:
+        raise exceptions.NotConsistInDB("this id db doesn't include")    
+    return updated
+
 
 def get_cursor():
     return cursor
@@ -69,10 +81,10 @@ def _init_db():
 def check_db_exists():
     """checks db initialization, if not — makes initialization"""
     cursor.execute("SELECT name FROM sqlite_master "
-                   "WHERE type='table' AND name='expense'")
+                   "WHERE type='table' AND name='reminder'")
     table_exists = cursor.fetchall()
     if table_exists:
         return
     _init_db()
 
-# check_db_exists()
+check_db_exists()
