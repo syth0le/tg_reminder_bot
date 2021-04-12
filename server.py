@@ -43,21 +43,21 @@ async def send_welcome(message: types.Message):
 
 @dp.message_handler(commands=['temp'])
 async def temporary_reminders(message: types.Message):
-    """Отправляет сегодняшнюю статистику трат"""
+    """doc"""
     answer_message = reminders.get_temporary_reminders()
     await message.answer(answer_message)
 
 
 @dp.message_handler(commands=['perm'])
 async def permanent_reminders(message: types.Message):
-    """Отправляет сегодняшнюю статистику трат"""
+    """doc"""
     answer_message = reminders.get_permanent_reminders()
     await message.answer(answer_message)
 
 
 @dp.message_handler(commands=['all'])
 async def all_reminders(message: types.Message):
-    """Отправляет сегодняшнюю статистику трат"""
+    """doc"""
     answer_message = reminders.get_all_reminders()
     await message.answer(answer_message)
 
