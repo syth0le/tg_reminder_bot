@@ -3,6 +3,7 @@ import os
 
 # import aiohttp
 from aiogram import Bot, Dispatcher, executor, types
+from aiogram.types import ReplyKeyboardRemove, ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMarkup, InlineKeyboardButton
 from dotenv import load_dotenv
 import aioschedule
 import asyncio
@@ -14,7 +15,7 @@ import reminders
 import exceptions
 import db
 
-load_dotenv()
+load_dotenv(override=True)
 
 API_TOKEN = os.getenv("API_TOKEN")
 ACCESS_ID = os.getenv("ACCESS_ID")
@@ -35,12 +36,13 @@ async def send_welcome(message: types.Message):
     """
     await message.answer(
         "Reminder bot\n\n"
-        "Добавить короткое напоминание: тип название время\n"
-        "список временных: /temp\n"
-        "список постоянных: /permanent\n"
+        "Добавить короткое напоминание: тип.название.ремя\n"
         "список полный: /all\n"
-        "очистка от выполненных: /clean"
-        "удаление: /del идентификатор")
+        "список временных: /temp\n"
+        "список постоянных: /perm\n"
+        "удаление напоминания: /del[rem_id]\n"
+        "выполнено напоминание: /done[rem_id]\n"
+        "очистка от выполненных: /clean")
 
 
 @dp.message_handler(commands=['temp'])
@@ -94,6 +96,19 @@ async def add_task_to_done(message: types.Message):
     answer_message = reminders.done_reminder(row_id)
     await message.answer(answer_message)
 
+
+@dp.message_handler(commands = ['smt'], state = '*')
+async def start(message: types.Message):
+    # inline_btn_1 = InlineKeyboardButton('Первая кнопка!', callback_data='button1')
+    # inline_kb1 = InlineKeyboardMarkup().add(inline_btn_1)
+    button1 = KeyboardButton('1️⃣')
+    button2 = KeyboardButton('2️⃣')
+    button3 = KeyboardButton('3️⃣')
+
+    markup3 = ReplyKeyboardMarkup().add(button1).add(button2).add(button3)
+    await message.reply("Первая инлайн кнопка", reply_markup=markup3)
+
+
 @dp.message_handler()
 async def add_reminder_route(message: types.Message):
     """Add new reminder or send message "NO ROUTE" information"""
@@ -131,5 +146,6 @@ async def scheduler():
 async def on_startup(_):
     asyncio.create_task(scheduler())
 
+
 if __name__ == '__main__':
-    executor.start_polling(dp, skip_updates=False, on_startup=on_startup)
+    executor.start_polling(dp, skip_updates=True, on_startup=on_startup)
