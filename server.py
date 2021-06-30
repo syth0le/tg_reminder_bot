@@ -101,9 +101,9 @@ async def add_task_to_done(message: types.Message):
 async def start(message: types.Message):
     # inline_btn_1 = InlineKeyboardButton('Первая кнопка!', callback_data='button1')
     # inline_kb1 = InlineKeyboardMarkup().add(inline_btn_1)
-    button1 = KeyboardButton('1️⃣')
-    button2 = KeyboardButton('2️⃣')
-    button3 = KeyboardButton('3️⃣')
+    button1 = KeyboardButton('/all')
+    button2 = KeyboardButton('/perm')
+    button3 = KeyboardButton('/temp')
 
     markup3 = ReplyKeyboardMarkup().add(button1).add(button2).add(button3)
     await message.reply("Первая инлайн кнопка", reply_markup=markup3)
@@ -120,10 +120,10 @@ async def add_reminder_route(message: types.Message):
         return
     await message.answer(reminder)
 
+
 async def job():
     local_time = str(datetime.datetime.now())[:-9] + "00"
     reminders = db.find_by_date('reminder', local_time)
-    
 
     if reminders:
         print("notification", local_time)
@@ -137,11 +137,13 @@ async def job():
         
         await bot.send_message(chat_id=ACCESS_ID, text=answer_message)
 
+
 async def scheduler():
     aioschedule.every(1).minutes.do(job)
     while True:
         await aioschedule.run_pending()
         await asyncio.sleep(1)
+
 
 async def on_startup(_):
     asyncio.create_task(scheduler())
