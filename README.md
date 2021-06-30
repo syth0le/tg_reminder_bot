@@ -25,6 +25,7 @@ telegram bot with async realisation remind functional
     >$ sudo nano .env
 * в открытом окошке редактирования файла .env заполните его так:
     > ACCESS_ID = 'user_id'
+    > 
     > API_TOKEN = 'your_API_TOKEN'
 * сохраняем файл и запускаем бота:
     > python server.py
