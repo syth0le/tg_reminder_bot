@@ -56,16 +56,6 @@ async def process_callback_btn_cancel(callback_query: types.CallbackQuery):
                            reply_markup=btn.mainMenu)
 
 
-@dp.callback_query_handler(lambda c: c.data == 'btn_temp')
-async def process_callback_btn_temp(callback_query: types.CallbackQuery):
-    await FormTemp.title.set()
-    await bot.answer_callback_query(callback_query.id)
-    await bot.edit_message_text(chat_id=callback_query.message.chat.id,
-                                message_id=callback_query.message.message_id,
-                                text="Enter title of reminder:",
-                                reply_markup=btn.inline_kb2)
-
-
 @dp.callback_query_handler(lambda c: c.data == 'cancel_adding', state='*')
 async def cancel_handler(callback_query: types.CallbackQuery, state: FSMContext):
     current_state = await state.get_state()
@@ -81,15 +71,25 @@ async def cancel_handler(callback_query: types.CallbackQuery, state: FSMContext)
     await bot.delete_message(chat_id=callback_query.message.chat.id, message_id=callback_query.message.message_id)
 
 
+@dp.callback_query_handler(lambda c: c.data == 'btn_temp')
+async def process_callback_btn_temp(callback_query: types.CallbackQuery):
+    await FormTemp.title.set()
+    await bot.answer_callback_query(callback_query.id)
+    await bot.edit_message_text(chat_id=callback_query.message.chat.id,
+                                message_id=callback_query.message.message_id,
+                                text="Enter title of reminder:",
+                                reply_markup=btn.inline_kb2)
+
+
 @dp.message_handler(state=FormTemp.title)
-async def process_title(message: types.Message, state: FSMContext):
+async def process_title_temp(message: types.Message, state: FSMContext):
     async with state.proxy() as data:
         data['title'] = message.text
 
     await FormTemp.next()
     await bot.send_message(
-        message.chat.id,
-        "Enter date of reminder:",
+        chat_id=message.chat.id,
+        text="Enter date/time of reminder:",
         reply_markup=btn.inline_kb2
     )
     await bot.delete_message(
@@ -98,7 +98,7 @@ async def process_title(message: types.Message, state: FSMContext):
     )
     await bot.delete_message(
         chat_id=message.chat.id,
-        message_id=message.message_id-1
+        message_id=message.message_id - 1
     )
 
 
@@ -119,6 +119,10 @@ async def process_date_perm(message: types.Message, state: FSMContext):
         await bot.delete_message(
             chat_id=message.chat.id,
             message_id=message.message_id
+        )
+        await bot.delete_message(
+            chat_id=message.chat.id,
+            message_id=message.message_id-1
         )
 
     await state.finish()
@@ -144,8 +148,8 @@ async def process_title_perm(message: types.Message, state: FSMContext):
 
     await FormPerm.next()
     await bot.send_message(
-        message.chat.id,
-        "Enter date of reminder:",
+        chat_id=message.chat.id,
+        text="Enter date/time of repeated reminder:",
         reply_markup=btn.inline_kb2
     )
     await bot.delete_message(
@@ -165,8 +169,8 @@ async def process_date_perm(message: types.Message, state: FSMContext):
 
     await FormPerm.next()
     await bot.send_message(
-        message.chat.id,
-        "Enter frequency of repeated reminder:",
+        chat_id=message.chat.id,
+        text="Enter frequency of repeated reminder:",
         reply_markup=btn.inline_kb2
     )
     await bot.delete_message(
@@ -194,9 +198,19 @@ async def process_frequency_perm(message: types.Message, state: FSMContext):
             answer,
             reply_markup=btn.mainMenu
         )
+        # await bot.edit_message_text(
+        #     chat_id=message.chat.id,
+        #     message_id=message.message_id - 1,
+        #     text="Enter frequency of repeated reminder:",
+        #     reply_markup=btn.inline_kb2
+    # ) СДЕЛАТЬ ИНЛАЙНОМ ПОСЛЕДНЕЕ ДЕЙСТВИЕ ТИПА ПОДТВЕРДИТЬ ИЛИ ЧЕ ТО ТИПА ТАКОГО ИЛИ ВООБЩЕ ВЫВЕСТИ ЗАМЕТКУ ТИП РЕДАКТИРОВАТЬ И ТЛ И ТП
         await bot.delete_message(
             chat_id=message.chat.id,
             message_id=message.message_id
+        )
+        await bot.delete_message(
+            chat_id=message.chat.id,
+            message_id=message.message_id-1
         )
 
     await state.finish()
