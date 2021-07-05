@@ -1,6 +1,8 @@
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram import types
 
+
+# --- utils buttons ---
 btnBack = KeyboardButton('Back')
 btnCancel = KeyboardButton('Cancel')
 btnCleanDone = KeyboardButton('Clean')
@@ -13,13 +15,6 @@ btnWatchList = KeyboardButton('Show reminders')
 mainMenu = ReplyKeyboardMarkup(resize_keyboard=True, row_width=1, one_time_keyboard=True).add(btnCreate,
                                                                       btnWatchList,
                                                                       btnCleanDone)
-
-# --- Create Menu buttons ---
-# btnHello = KeyboardButton('hello')
-# btnHello2 = KeyboardButton('hello2')
-# createMenu = ReplyKeyboardMarkup(resize_keyboard=True, row_width=1).add(btnHello,
-#                                                                         btnHello2,
-#                                                                         btnBack)
 
 # --- Show Reminders Menu buttons ---
 btnShowAll = KeyboardButton('All')
@@ -41,3 +36,23 @@ inline_btn_cancel_adding = InlineKeyboardButton('Cancel', callback_data='cancel_
 
 inline_kb1 = InlineKeyboardMarkup(row_width=2).add(inline_btn_temp, inline_btn_perm, inline_btn_cancel)
 inline_kb2 = InlineKeyboardMarkup().add(inline_btn_cancel_adding)
+
+# --- Inline Editing Reminder status buttons ---
+inline_btn_done = InlineKeyboardButton('Done', callback_data='btn_done')
+inline_btn_delete = InlineKeyboardButton('Delete', callback_data='btn_delete')
+inline_btn_edit = InlineKeyboardButton('Edit', callback_data='btn_edit')
+
+inline_kb_edit1 = InlineKeyboardMarkup(row_width=2).add(inline_btn_done, inline_btn_delete, inline_btn_edit)
+
+# --- Inline Editing Reminder buttons ---
+inline_btn_back = InlineKeyboardButton('<<< Back', callback_data='btn_back')
+inline_btn_edit_text = InlineKeyboardButton('Text', callback_data='btn_edit_text')
+inline_btn_edit_date = InlineKeyboardButton('Date', callback_data='btn_edit_date')
+inline_btn_edit_type = InlineKeyboardButton('Type', callback_data='btn_edit_type')
+inline_btn_edit_frequency = InlineKeyboardButton('Frequency', callback_data='btn_edit_frq')
+
+inline_kb_edit2 = InlineKeyboardMarkup(row_width=2).add(inline_btn_edit_text,
+                                                        inline_btn_edit_date,
+                                                        inline_btn_edit_type,
+                                                        inline_btn_edit_frequency,
+                                                        inline_btn_back)

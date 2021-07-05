@@ -1,17 +1,9 @@
 import logging
 import os
 
-# import aiohttp
-from typing import Union
-
-import aiogram
 from aiogram import Bot, Dispatcher, executor, types
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.dispatcher import FSMContext
-from aiogram.dispatcher.filters import Text
-from aiogram.dispatcher.filters.state import State, StatesGroup
-from aiogram.types import ReplyKeyboardRemove, ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMarkup, \
-    InlineKeyboardButton
 from dotenv import load_dotenv
 import aioschedule
 import asyncio
@@ -65,9 +57,9 @@ async def cancel_handler(callback_query: types.CallbackQuery, state: FSMContext)
     await state.finish()
 
     await bot.answer_callback_query(callback_query.id)
-    # await bot.send_message(chat_id=callback_query.message.chat.id,
-    #                        text="Canceled",
-    #                        reply_markup=btn.mainMenu)
+    await bot.send_message(chat_id=callback_query.message.chat.id,
+                           text="Canceled",
+                           reply_markup=btn.mainMenu)
     await bot.delete_message(chat_id=callback_query.message.chat.id, message_id=callback_query.message.message_id)
 
 
@@ -122,7 +114,7 @@ async def process_date_perm(message: types.Message, state: FSMContext):
         )
         await bot.delete_message(
             chat_id=message.chat.id,
-            message_id=message.message_id-1
+            message_id=message.message_id - 1
         )
 
     await state.finish()
@@ -196,24 +188,103 @@ async def process_frequency_perm(message: types.Message, state: FSMContext):
         await bot.send_message(
             message.chat.id,
             answer,
-            reply_markup=btn.mainMenu
+            reply_markup=btn.inline_kb_edit1
         )
         # await bot.edit_message_text(
         #     chat_id=message.chat.id,
         #     message_id=message.message_id - 1,
         #     text="Enter frequency of repeated reminder:",
         #     reply_markup=btn.inline_kb2
-    # ) СДЕЛАТЬ ИНЛАЙНОМ ПОСЛЕДНЕЕ ДЕЙСТВИЕ ТИПА ПОДТВЕРДИТЬ ИЛИ ЧЕ ТО ТИПА ТАКОГО ИЛИ ВООБЩЕ ВЫВЕСТИ ЗАМЕТКУ ТИП РЕДАКТИРОВАТЬ И ТЛ И ТП
+        # ) СДЕЛАТЬ ИНЛАЙНОМ ПОСЛЕДНЕЕ ДЕЙСТВИЕ ТИПА ПОДТВЕРДИТЬ ИЛИ ЧЕ ТО ТИПА ТАКОГО ИЛИ ВООБЩЕ ВЫВЕСТИ ЗАМЕТКУ ТИП РЕДАКТИРОВАТЬ И ТЛ И ТП
         await bot.delete_message(
             chat_id=message.chat.id,
             message_id=message.message_id
         )
         await bot.delete_message(
             chat_id=message.chat.id,
-            message_id=message.message_id-1
+            message_id=message.message_id - 1
         )
 
     await state.finish()
+
+
+#################################################################
+
+@dp.callback_query_handler(lambda c: c.data == 'btn_done')
+async def process_callback_btn_perm(callback_query: types.CallbackQuery):
+    await bot.answer_callback_query(callback_query.id)
+    await bot.send_message(chat_id=callback_query.message.chat.id,
+                           text="DONE")
+
+
+@dp.callback_query_handler(lambda c: c.data == 'btn_delete')
+async def process_callback_btn_perm(callback_query: types.CallbackQuery):
+    await bot.answer_callback_query(callback_query.id)
+    await bot.send_message(chat_id=callback_query.message.chat.id,
+                           text="DELETED")
+
+
+@dp.callback_query_handler(lambda c: c.data == 'btn_edit')
+async def process_callback_btn_perm(callback_query: types.CallbackQuery):
+    await bot.answer_callback_query(callback_query.id)
+    await bot.edit_message_text(chat_id=callback_query.message.chat.id,
+                                message_id=callback_query.message.message_id,
+                                text=callback_query.message.text,
+                                reply_markup=btn.inline_kb_edit2)
+
+
+@dp.callback_query_handler(lambda c: c.data == 'btn_back')
+async def process_callback_btn_perm(callback_query: types.CallbackQuery):
+    await bot.answer_callback_query(callback_query.id)
+    await bot.edit_message_text(chat_id=callback_query.message.chat.id,
+                                message_id=callback_query.message.message_id,
+                                text=callback_query.message.text,
+                                reply_markup=btn.inline_kb_edit1)
+
+
+@dp.callback_query_handler(lambda c: c.data == 'btn_edit_text')
+async def process_callback_btn_perm(callback_query: types.CallbackQuery):
+    await bot.answer_callback_query(callback_query.id)
+    await bot.edit_message_text(chat_id=callback_query.message.chat.id,
+                                message_id=callback_query.message.message_id,
+                                text="EDIT TEXT",
+                                reply_markup=btn.inline_kb_edit1)
+
+
+@dp.callback_query_handler(lambda c: c.data == 'btn_edit_text')
+async def process_callback_btn_perm(callback_query: types.CallbackQuery):
+    await bot.answer_callback_query(callback_query.id)
+    await bot.edit_message_text(chat_id=callback_query.message.chat.id,
+                                message_id=callback_query.message.message_id,
+                                text="EDIT TEXT",
+                                reply_markup=btn.inline_kb_edit1)
+
+
+@dp.callback_query_handler(lambda c: c.data == 'btn_edit_date')
+async def process_callback_btn_perm(callback_query: types.CallbackQuery):
+    await bot.answer_callback_query(callback_query.id)
+    await bot.edit_message_text(chat_id=callback_query.message.chat.id,
+                                message_id=callback_query.message.message_id,
+                                text="EDIT DATE/TIME",
+                                reply_markup=btn.inline_kb_edit1)
+
+
+@dp.callback_query_handler(lambda c: c.data == 'btn_edit_type')
+async def process_callback_btn_perm(callback_query: types.CallbackQuery):
+    await bot.answer_callback_query(callback_query.id)
+    await bot.edit_message_text(chat_id=callback_query.message.chat.id,
+                                message_id=callback_query.message.message_id,
+                                text="EDIT TYPE",
+                                reply_markup=btn.inline_kb_edit1)
+
+
+@dp.callback_query_handler(lambda c: c.data == 'btn_edit_frq')
+async def process_callback_btn_perm(callback_query: types.CallbackQuery):
+    await bot.answer_callback_query(callback_query.id)
+    await bot.edit_message_text(chat_id=callback_query.message.chat.id,
+                                message_id=callback_query.message.message_id,
+                                text="EDIT FREQUENCY",
+                                reply_markup=btn.inline_kb_edit1)
 
 
 @dp.message_handler(commands=['start', 'help'])
