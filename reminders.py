@@ -37,9 +37,10 @@ def get_all_reminders():
     rows = cursor.fetchall()
     if not rows:
         return "No reminders in system"
+    return rows
 
-    answer_message = _data_to_result_string("All", rows)
-    return answer_message
+    # answer_message = _data_to_result_string("All", rows)
+    # return answer_message
 
 
 def get_permanent_reminders():
@@ -49,9 +50,10 @@ def get_permanent_reminders():
     rows = cursor.fetchall()
     if not rows:
         return "No permanent reminders in system"
+    return rows
 
-    answer_message = _data_to_result_string("Permanent", rows)
-    return answer_message
+    # answer_message = _data_to_result_string("Permanent", rows)
+    # return answer_message
 
 
 def get_temporary_reminders():
@@ -61,8 +63,9 @@ def get_temporary_reminders():
     rows = cursor.fetchall()
     if not rows:
         return "No temporary reminders in system"
-    answer_message = _data_to_result_string("Temporary", rows)
-    return answer_message
+    return rows
+    # answer_message = _data_to_result_string("Temporary", rows)
+    # return answer_message
 
 
 def delete_done_reminders():

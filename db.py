@@ -71,6 +71,12 @@ def find_by_date(table: str, date: str) -> List[Tuple]:
     return rows
 
 
+def find_by_id(table:str, id: int):
+    cursor.execute(f"SELECT * FROM {table} WHERE id ={id}")
+    row = cursor.fetchall()
+    return row
+
+
 def get_cursor():
     return cursor
 

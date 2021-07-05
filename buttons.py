@@ -53,6 +53,7 @@ inline_btn_edit_frequency = InlineKeyboardButton('Frequency', callback_data='btn
 
 inline_kb_edit2 = InlineKeyboardMarkup(row_width=2).add(inline_btn_edit_text,
                                                         inline_btn_edit_date,
-                                                        inline_btn_edit_type,
+                                                        inline_btn_back)
+inline_kb_edit3 = InlineKeyboardMarkup(row_width=2).add(inline_btn_edit_text,
                                                         inline_btn_edit_frequency,
                                                         inline_btn_back)

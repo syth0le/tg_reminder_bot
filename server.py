@@ -4,6 +4,7 @@ import os
 from aiogram import Bot, Dispatcher, executor, types
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.dispatcher import FSMContext
+from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from dotenv import load_dotenv
 import aioschedule
 import asyncio
@@ -106,7 +107,7 @@ async def process_date_perm(message: types.Message, state: FSMContext):
         await bot.send_message(
             message.chat.id,
             answer,
-            reply_markup=btn.mainMenu
+            reply_markup=btn.inline_kb_edit1
         )
         await bot.delete_message(
             chat_id=message.chat.id,
@@ -227,6 +228,7 @@ async def process_callback_btn_perm(callback_query: types.CallbackQuery):
 @dp.callback_query_handler(lambda c: c.data == 'btn_edit')
 async def process_callback_btn_perm(callback_query: types.CallbackQuery):
     await bot.answer_callback_query(callback_query.id)
+    ## cделать проверку и переадрессацию на кнопку реплая исходя из темп или перм
     await bot.edit_message_text(chat_id=callback_query.message.chat.id,
                                 message_id=callback_query.message.message_id,
                                 text=callback_query.message.text,
@@ -239,15 +241,6 @@ async def process_callback_btn_perm(callback_query: types.CallbackQuery):
     await bot.edit_message_text(chat_id=callback_query.message.chat.id,
                                 message_id=callback_query.message.message_id,
                                 text=callback_query.message.text,
-                                reply_markup=btn.inline_kb_edit1)
-
-
-@dp.callback_query_handler(lambda c: c.data == 'btn_edit_text')
-async def process_callback_btn_perm(callback_query: types.CallbackQuery):
-    await bot.answer_callback_query(callback_query.id)
-    await bot.edit_message_text(chat_id=callback_query.message.chat.id,
-                                message_id=callback_query.message.message_id,
-                                text="EDIT TEXT",
                                 reply_markup=btn.inline_kb_edit1)
 
 
@@ -293,14 +286,7 @@ async def send_welcome(message: types.Message):
     This handler will be called when user sends `/start` or `/help` command
     """
     await message.answer(
-        "Reminder bot\n\n"
-
-        "список полный: /all\n"
-        "список временных: /temp\n"
-        "список постоянных: /perm\n"
-        "удаление напоминания: /del[rem_id]\n"
-        "выполнено напоминание: /done[rem_id]\n"
-        "очистка от выполненных: /clean",
+        "Reminder bot",
         reply_markup=btn.mainMenu)
 
 
@@ -338,24 +324,54 @@ async def show_reminders(message: types.Message):
 @dp.message_handler(commands=['all'])
 async def show_all(message: types.Message):
     """Show all reminders in system."""
+    inline_kb_to_choose = InlineKeyboardMarkup(row_width=6)
+    data = reminders.get_all_reminders()
+    temp = 1
+
     await message.delete()
-    await message.answer(reminders.get_all_reminders(), reply_markup=btn.anyRemindersMenu)
+    await message.answer("All reminders:", reply_markup=btn.anyRemindersMenu)
+    for elem in data:
+        inline_btn = InlineKeyboardButton(temp, callback_data=f"edit_{elem[0]}")
+        inline_kb_to_choose.insert(inline_btn)
+        temp += 1
+
+    await message.answer(data, reply_markup=inline_kb_to_choose)
 
 
 @dp.message_handler(lambda message: message.text.startswith('Permanent'))
 @dp.message_handler(commands=['perm'])
 async def show_permanent(message: types.Message):
     """Show all permanent reminders in system."""
+    inline_kb_to_choose = InlineKeyboardMarkup(row_width=6)
+    data = reminders.get_permanent_reminders()
+    temp = 1
+
     await message.delete()
-    await message.answer(reminders.get_permanent_reminders(), reply_markup=btn.anyRemindersMenu)
+    await message.answer("Permanent reminders:", reply_markup=btn.anyRemindersMenu)
+    for elem in data:
+        inline_btn = InlineKeyboardButton(temp, callback_data=f"edit_{elem[0]}")
+        inline_kb_to_choose.insert(inline_btn)
+        temp += 1
+
+    await message.answer(data, reply_markup=inline_kb_to_choose)
 
 
 @dp.message_handler(lambda message: message.text.startswith('Temporary'))
 @dp.message_handler(commands=['temp'])
 async def show_temporary(message: types.Message):
     """Show all temporary reminders in system."""
+    inline_kb_to_choose = InlineKeyboardMarkup(row_width=6)
+    data = reminders.get_temporary_reminders()
+    temp = 1
+
     await message.delete()
-    await message.answer(reminders.get_temporary_reminders(), reply_markup=btn.anyRemindersMenu)
+    await message.answer("Temporary reminders:", reply_markup=btn.anyRemindersMenu)
+    for elem in data:
+        inline_btn = InlineKeyboardButton(temp, callback_data=f"edit_{elem[0]}")
+        inline_kb_to_choose.insert(inline_btn)
+        temp += 1
+
+    await message.answer(data, reply_markup=inline_kb_to_choose)
 
 
 @dp.message_handler(lambda message: message.text.startswith('Clean'))
@@ -378,6 +394,16 @@ async def cancel(message: types.Message):
     await message.delete()
     await message.answer(message.text, reply_markup=btn.mainMenu,
                          allow_sending_without_reply=True)
+
+
+@dp.callback_query_handler(lambda c: c.data and c.data.startswith('edit_'))
+async def process_callback_kb1btn1(callback_query: types.CallbackQuery):
+    id = callback_query.data[5:]
+    reminder = db.find_by_id(table='reminder', id=id)
+    await bot.edit_message_text(chat_id=callback_query.message.chat.id,
+                                message_id=callback_query.message.message_id,
+                                text=reminder,
+                                reply_markup=btn.inline_kb_edit1)
 
 
 # @dp.message_handler()
