@@ -8,22 +8,26 @@ import db
 
 
 class Reminder(NamedTuple):
-    name: str
+    title: str
     date: str
-    category: str
+    type: str
 
 
-def add_reminder(message) -> Reminder:
-    reminder = _parse_message(message)
-    temp = db.insert(
+def add_reminder(title: str,
+                 date: str,
+                 category: str,
+                 frequency: int = 0) -> Reminder:
+    date = parse(date, fuzzy=True)
+    db.insert(
         'reminder',
         {
-            'name': reminder.name,
-            'date_time': reminder.date,
-            'category': reminder.category
+            'name': title,
+            'date_time': date,
+            'category': category,
+            'for_each': frequency
         }
     )
-    return f'Created "{reminder.name}" on {reminder.date}'
+    return f'Created "{title}" on {date}'
 
 
 def get_all_reminders():
@@ -48,6 +52,7 @@ def get_permanent_reminders():
 
     answer_message = _data_to_result_string("Permanent", rows)
     return answer_message
+
 
 def get_temporary_reminders():
     cursor = db.get_cursor()
@@ -96,14 +101,14 @@ def _get_now_datetime() -> datetime.datetime:
 def _parse_message(message) -> Reminder:
     data = message.split('.')
     try:
-        category = data[0]
-        name = data[1]
+        type = data[0]
+        title = data[1]
         date = parse(data[2], fuzzy=True)
     except IndexError:
         raise exceptions.NotCorrectMessage("can't parse this message")
 
-    if category == 'temp' or category == 'perm':
-        return Reminder(name=name, date=date, category=category)
+    if type == 'temp' or type == 'perm':
+        return Reminder(title=title, date=date, type=type)
     else:
         raise exceptions.NotCorrectMessage("not correct category")
 
