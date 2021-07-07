@@ -416,6 +416,31 @@ async def show_temporary(message: types.Message):
     await message.answer(result_string, reply_markup=inline_kb_to_choose)
 
 
+@dp.message_handler(lambda message: message.text.startswith('Bookmarks'))
+@dp.message_handler(commands=['book'])
+async def show_permanent(message: types.Message):
+    """Show all bookmarks in system."""
+    inline_kb_to_choose = InlineKeyboardMarkup(row_width=6)
+    data = reminders.get_bookmarks()
+    temp = 1
+    result_string = ''
+
+    await message.delete()
+    await message.answer("Bookmarks:", reply_markup=btn.anyRemindersMenu)
+    for elem in data:
+        inline_btn = InlineKeyboardButton(temp, callback_data=f"edit_{elem[0]}")
+        inline_kb_to_choose.insert(inline_btn)
+        print(elem)
+        if elem[3]:
+            stick = STICKER_DONE
+        else:
+            stick = STICKER_NOT_DONE
+        result_string += f'{temp}) {stick} - {elem[1]}:\n{elem[3]}\n'
+        temp += 1
+
+    await message.answer(result_string, reply_markup=inline_kb_to_choose)
+
+
 @dp.message_handler(lambda message: message.text.startswith('Clean'))
 @dp.message_handler(commands=['clean'])
 async def clean(message: types.Message):
