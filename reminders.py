@@ -2,22 +2,19 @@ from typing import NamedTuple
 import datetime
 import pytz
 from dateutil.parser import parse
+from typing import Union
 
 import exceptions
 import db
-
-
-class Reminder(NamedTuple):
-    title: str
-    date: str
-    type: str
+from utility import TemporaryReminder, PermanentReminder, Bookmark
 
 
 def add_reminder(title: str,
                  date: str,
                  category: str,
-                 frequency: int = 0) -> Reminder:
+                 frequency: int = 0) -> Union[TemporaryReminder, PermanentReminder, Bookmark]:
     date = parse(date, fuzzy=True)
+    print(date)
     db.insert(
         'reminder',
         {
@@ -27,7 +24,12 @@ def add_reminder(title: str,
             'for_each': frequency
         }
     )
-    return f'Created "{title}" on {date}'
+    if category == 'temp':
+        return TemporaryReminder(title=title, type=category, date=date, is_done=False)
+    elif category == 'perm':
+        return PermanentReminder(title=title, type=category, date=date, frequency=frequency, is_done=False)
+    else:
+        return Bookmark(title=title, type=category, is_done=False)
 
 
 def get_all_reminders():
@@ -86,7 +88,7 @@ def done_reminder(row_id):
         done_reminder = db.update('reminder', row_id)
     except exceptions.NotConsistInDB as e:
         return str(e)
-    return f'reminder {done_reminder[1]} is done'
+    return done_reminder
 
 
 def _get_now_formatted() -> str:
@@ -101,7 +103,7 @@ def _get_now_datetime() -> datetime.datetime:
     return now
 
 
-def _parse_message(message) -> Reminder:
+def _parse_message(message) -> TemporaryReminder:
     data = message.split('.')
     try:
         type = data[0]
@@ -111,9 +113,10 @@ def _parse_message(message) -> Reminder:
         raise exceptions.NotCorrectMessage("can't parse this message")
 
     if type == 'temp' or type == 'perm':
-        return Reminder(title=title, date=date, type=type)
+        return TemporaryReminder(title=title, date=date, type=type, is_done=False)
     else:
         raise exceptions.NotCorrectMessage("not correct category")
+
 
 def _data_to_result_string(kind, rows):
     last_reminders_rows = [

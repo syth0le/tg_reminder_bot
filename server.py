@@ -17,6 +17,7 @@ import reminders
 import exceptions
 import db
 import buttons as btn
+from utility import STICKER_DONE, STICKER_NOT_DONE
 
 load_dotenv(override=True)
 
@@ -213,16 +214,36 @@ async def process_frequency_perm(message: types.Message, state: FSMContext):
 
 @dp.callback_query_handler(lambda c: c.data == 'btn_done')
 async def process_callback_btn_perm(callback_query: types.CallbackQuery):
-    await bot.answer_callback_query(callback_query.id)
-    await bot.send_message(chat_id=callback_query.message.chat.id,
-                           text="DONE")
+    """Done only 1 reminder by identificator"""
+    await bot.answer_callback_query(callback_query.id, text="Reminder was done.")
+    text = str(callback_query.message.text)
+    row_id = int(text.split('id:')[1])
+    reminder = reminders.done_reminder(row_id)
+    if reminder[4] == 0:
+        await bot.edit_message_text(chat_id=callback_query.message.chat.id,
+                                    message_id=callback_query.message.message_id,
+                                    text=callback_query.message.text,
+                                    reply_markup=btn.inline_kb_edit2)
+    else:
+        done_text = text.split(' - ')[1]
+        result_string = STICKER_DONE + ' - ' + done_text
+        await bot.edit_message_text(chat_id=callback_query.message.chat.id,
+                                    message_id=callback_query.message.message_id,
+                                    text=result_string,
+                                    reply_markup=btn.inline_kb_edit2)
 
 
 @dp.callback_query_handler(lambda c: c.data == 'btn_delete')
 async def process_callback_btn_perm(callback_query: types.CallbackQuery):
-    await bot.answer_callback_query(callback_query.id)
-    await bot.send_message(chat_id=callback_query.message.chat.id,
-                           text="DELETED")
+    """Delete only 1 reminder by identificator"""
+    text = str(callback_query.message.text)
+    row_id = int(text.split('id:')[1])
+    reminder = reminders.delete_reminder(row_id)
+    result_string = f'Reminder "{reminder[1]}" was deleted'
+    await bot.answer_callback_query(callback_query.id, text=result_string)
+    await bot.delete_message(chat_id=callback_query.message.chat.id,
+                             message_id=callback_query.message.message_id)
+    # Доделать появление списка при удалении
 
 
 @dp.callback_query_handler(lambda c: c.data == 'btn_edit')
@@ -327,15 +348,22 @@ async def show_all(message: types.Message):
     inline_kb_to_choose = InlineKeyboardMarkup(row_width=6)
     data = reminders.get_all_reminders()
     temp = 1
+    result_string = ''
 
     await message.delete()
     await message.answer("All reminders:", reply_markup=btn.anyRemindersMenu)
     for elem in data:
         inline_btn = InlineKeyboardButton(temp, callback_data=f"edit_{elem[0]}")
         inline_kb_to_choose.insert(inline_btn)
+
+        if elem[4]:
+            stick = STICKER_DONE
+        else:
+            stick = STICKER_NOT_DONE
+        result_string += f'{temp}) {stick} - {elem[1]} ({elem[2]}):\n{elem[3]}\n'
         temp += 1
 
-    await message.answer(data, reply_markup=inline_kb_to_choose)
+    await message.answer(result_string, reply_markup=inline_kb_to_choose)
 
 
 @dp.message_handler(lambda message: message.text.startswith('Permanent'))
@@ -345,15 +373,22 @@ async def show_permanent(message: types.Message):
     inline_kb_to_choose = InlineKeyboardMarkup(row_width=6)
     data = reminders.get_permanent_reminders()
     temp = 1
+    result_string = ''
 
     await message.delete()
     await message.answer("Permanent reminders:", reply_markup=btn.anyRemindersMenu)
     for elem in data:
         inline_btn = InlineKeyboardButton(temp, callback_data=f"edit_{elem[0]}")
         inline_kb_to_choose.insert(inline_btn)
+
+        if elem[4]:
+            stick = STICKER_DONE
+        else:
+            stick = STICKER_NOT_DONE
+        result_string += f'{temp}) {stick} - {elem[1]}:\n{elem[3]}\n'
         temp += 1
 
-    await message.answer(data, reply_markup=inline_kb_to_choose)
+    await message.answer(result_string, reply_markup=inline_kb_to_choose)
 
 
 @dp.message_handler(lambda message: message.text.startswith('Temporary'))
@@ -363,15 +398,22 @@ async def show_temporary(message: types.Message):
     inline_kb_to_choose = InlineKeyboardMarkup(row_width=6)
     data = reminders.get_temporary_reminders()
     temp = 1
+    result_string = ''
 
     await message.delete()
     await message.answer("Temporary reminders:", reply_markup=btn.anyRemindersMenu)
     for elem in data:
         inline_btn = InlineKeyboardButton(temp, callback_data=f"edit_{elem[0]}")
         inline_kb_to_choose.insert(inline_btn)
+
+        if elem[4]:
+            stick = STICKER_DONE
+        else:
+            stick = STICKER_NOT_DONE
+        result_string += f'{temp}) {stick} - {elem[1]}:\n{elem[3]}\n'
         temp += 1
 
-    await message.answer(data, reply_markup=inline_kb_to_choose)
+    await message.answer(result_string, reply_markup=inline_kb_to_choose)
 
 
 @dp.message_handler(lambda message: message.text.startswith('Clean'))
@@ -400,9 +442,14 @@ async def cancel(message: types.Message):
 async def process_callback_kb1btn1(callback_query: types.CallbackQuery):
     id = callback_query.data[5:]
     reminder = db.find_by_id(table='reminder', id=id)
+    if reminder[4]:
+        stick = STICKER_DONE
+    else:
+        stick = STICKER_NOT_DONE
+    result_string = f'{stick} - {reminder[1]} ({reminder[2]}):\n{reminder[3]}\n id:{reminder[0]}'
     await bot.edit_message_text(chat_id=callback_query.message.chat.id,
                                 message_id=callback_query.message.message_id,
-                                text=reminder,
+                                text=result_string,
                                 reply_markup=btn.inline_kb_edit1)
 
 
