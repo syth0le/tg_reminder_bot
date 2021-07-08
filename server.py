@@ -270,6 +270,8 @@ async def process_callback_btn_perm(callback_query: types.CallbackQuery):
     text = str(callback_query.message.text)
     row_id = int(text.split('id:')[1])
     reminder = reminders.done_reminder(row_id)
+    if text[1] == '*':
+        text = text.split('**NOTIFICATION**\n\n')[1]
     if reminder.is_done == 0:
         await bot.edit_message_text(chat_id=callback_query.message.chat.id,
                                     message_id=callback_query.message.message_id,
@@ -294,7 +296,10 @@ async def process_callback_btn_perm(callback_query: types.CallbackQuery):
     row_id = int(text.split('id:')[1])
     reminder = reminders.delete_reminder(row_id)
     # print(reminder)
-    result_string = f'Reminder "{reminder.title}" was deleted'
+    if isinstance(reminder, str):
+        result_string = reminder
+    else:
+        result_string = f'Reminder "{reminder.title}" was deleted'
     await bot.answer_callback_query(callback_query.id, text=result_string)
     await bot.delete_message(chat_id=callback_query.message.chat.id,
                              message_id=callback_query.message.message_id)
@@ -594,7 +599,7 @@ async def job():
             print(elem[3])
             stick_done, stick_type = stickers_recognize(elem[4], elem[2])
 
-            answer_message = f"**NOTIFICATION**\n\n " \
+            answer_message = f"**NOTIFICATION**\n\n" \
                              + f'{stick_done} {stick_type} - {elem[1]}:\n{elem[3]}\n id:{elem[0]}'
             await bot.send_message(chat_id=ACCESS_ID, text=answer_message, reply_markup=btn.inline_kb_edit1)
             # здесь тоже storage подключить
