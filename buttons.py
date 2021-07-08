@@ -43,11 +43,18 @@ inline_kb2 = InlineKeyboardMarkup().add(inline_btn_cancel_adding)
 inline_btn_done = InlineKeyboardButton('Done', callback_data='btn_done')
 inline_btn_delete = InlineKeyboardButton('Delete', callback_data='btn_delete')
 inline_btn_edit = InlineKeyboardButton('Edit', callback_data='btn_edit')
+inline_btn_back = InlineKeyboardButton('<<< Back to list', callback_data='btn_back_list')
 
-inline_kb_edit1 = InlineKeyboardMarkup(row_width=2).add(inline_btn_done, inline_btn_delete, inline_btn_edit)
-
+inline_kb_edit1 = InlineKeyboardMarkup(row_width=2).add(inline_btn_done,
+                                                        inline_btn_delete,
+                                                        # inline_btn_edit
+                                                        )
+inline_kb_edit1_back = InlineKeyboardMarkup(row_width=2).add(inline_btn_done,
+                                                             inline_btn_delete,
+                                                             # inline_btn_edit
+                                                             ).add(inline_btn_back)
 # --- Inline Editing Reminder buttons ---
-inline_btn_back = InlineKeyboardButton('<<< Back', callback_data='btn_back')
+# inline_btn_back = InlineKeyboardButton('<<< Back', callback_data='btn_back')
 inline_btn_edit_text = InlineKeyboardButton('Text', callback_data='btn_edit_text')
 inline_btn_edit_date = InlineKeyboardButton('Date', callback_data='btn_edit_date')
 inline_btn_edit_type = InlineKeyboardButton('Type', callback_data='btn_edit_type')

@@ -1,5 +1,6 @@
 import logging
 import os
+from typing import Union
 
 from aiogram import Bot, Dispatcher, executor, types
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
@@ -273,15 +274,15 @@ async def process_callback_btn_perm(callback_query: types.CallbackQuery):
         await bot.edit_message_text(chat_id=callback_query.message.chat.id,
                                     message_id=callback_query.message.message_id,
                                     text=callback_query.message.text,
-                                    reply_markup=btn.inline_kb_edit1)
+                                    reply_markup=callback_query.message.reply_markup)
     else:
-        done_text = text.split(' - ')[1]
-        result_string = STICKER_DONE + ' - ' + done_text
+        done_text = text[1:]
+        result_string = STICKER_DONE + done_text
         try:
             await bot.edit_message_text(chat_id=callback_query.message.chat.id,
                                         message_id=callback_query.message.message_id,
                                         text=result_string,
-                                        reply_markup=btn.inline_kb_edit1)
+                                        reply_markup=callback_query.message.reply_markup)
         except MessageNotModified:
             pass
 
@@ -306,6 +307,8 @@ async def process_callback_btn_perm(callback_query: types.CallbackQuery):
 @dp.callback_query_handler(lambda c: c.data == 'btn_edit')
 async def process_callback_btn_perm(callback_query: types.CallbackQuery):
     await bot.answer_callback_query(callback_query.id)
+    await storage.set_data(chat=ACCESS_ID, data={"text": callback_query.message.text,
+                                                 "markup": btn.inline_kb_edit1_back})
     ## cделать проверку и переадрессацию на кнопку реплая исходя из темп или перм
     await bot.edit_message_text(chat_id=callback_query.message.chat.id,
                                 message_id=callback_query.message.message_id,
@@ -356,6 +359,23 @@ async def process_callback_btn_perm(callback_query: types.CallbackQuery):
                                 message_id=callback_query.message.message_id,
                                 text="EDIT FREQUENCY",
                                 reply_markup=btn.inline_kb_edit1)
+
+
+@dp.callback_query_handler(lambda c: c.data == 'btn_back_list')
+async def process_callback_btn_perm(callback_query: types.CallbackQuery):
+    await bot.answer_callback_query(callback_query.id)
+    data = await storage.get_data(chat=ACCESS_ID)
+    try:
+        await bot.edit_message_text(chat_id=callback_query.message.chat.id,
+                                    message_id=callback_query.message.message_id,
+                                    text=data['text'],
+                                    reply_markup=data['markup'])
+    except KeyError:
+        await bot.delete_message(chat_id=callback_query.message.chat.id,
+                                 message_id=callback_query.message.message_id)
+        await bot.send_message(chat_id=callback_query.message.chat.id,
+                               text='Choose in menu:',
+                               reply_markup=btn.mainMenu)
 
 
 @dp.message_handler(commands=['start', 'help', 'menu'])
@@ -422,6 +442,9 @@ async def show_all(message: types.Message):
     else:
         await message.answer("No reminders in system.", reply_markup=btn.mainMenu)
 
+    await storage.set_data(chat=ACCESS_ID, data={"text": result_string,
+                                                 "markup": inline_kb_to_choose})
+
 
 @dp.message_handler(lambda message: message.text.startswith('Permanent'))
 @dp.message_handler(commands=['perm'])
@@ -448,6 +471,9 @@ async def show_permanent(message: types.Message):
     else:
         await message.answer("No permanent reminders in system.", reply_markup=btn.remindersMenu)
 
+    await storage.set_data(chat=ACCESS_ID, data={"text": result_string,
+                                                 "markup": inline_kb_to_choose})
+
 
 @dp.message_handler(lambda message: message.text.startswith('Temporary'))
 @dp.message_handler(commands=['temp'])
@@ -472,6 +498,9 @@ async def show_temporary(message: types.Message):
     else:
         await message.answer("No temporary reminders in system.", reply_markup=btn.remindersMenu)
 
+    await storage.set_data(chat=ACCESS_ID, data={"text": result_string,
+                                                 "markup": inline_kb_to_choose})
+
 
 @dp.message_handler(lambda message: message.text.startswith('Bookmarks'))
 @dp.message_handler(commands=['book'])
@@ -489,13 +518,16 @@ async def show_permanent(message: types.Message):
             inline_btn = InlineKeyboardButton(temp, callback_data=f"edit_{elem[0]}")
             inline_kb_to_choose.insert(inline_btn)
             print(elem)
-            stick_done, stick_type = stickers_recognize(elem[3], 'book')
-            result_string += f'{temp}) {stick_done} {stick_type} - {elem[1]}:\n{elem[3]}\n'
+            stick_done, stick_type = stickers_recognize(elem[4], 'book')
+            result_string += f'{temp}) {stick_done} {stick_type} - {elem[1]}\n'
             temp += 1
 
         await message.answer(result_string, reply_markup=inline_kb_to_choose)
     else:
         await message.answer("No bookmarks in system.", reply_markup=btn.remindersMenu)
+
+    await storage.set_data(chat=ACCESS_ID, data={"text": result_string,
+                                                 "markup": inline_kb_to_choose})
 
 
 @dp.message_handler(lambda message: message.text.startswith('Clean'))
@@ -524,12 +556,15 @@ async def cancel(message: types.Message):
 async def process_callback_kb1btn1(callback_query: types.CallbackQuery):
     id = callback_query.data[5:]
     reminder = db.find_by_id(table='reminder', id=id)
-    stick_done, stick_type = stickers_recognize(reminder[3], reminder[2])
-    result_string = f'{stick_done} {stick_type} - {reminder[1]}:\n{reminder[3]}\n id:{reminder[0]}'
+    stick_done, stick_type = stickers_recognize(reminder[4], reminder[2])
+    if reminder[2] != 'book':
+        result_string = f'{stick_done} {stick_type} - {reminder[1]}:\n{reminder[3]}\n id:{reminder[0]}'
+    else:
+        result_string = f'{stick_done} {stick_type} - {reminder[1]}\n id:{reminder[0]}'
     await bot.edit_message_text(chat_id=callback_query.message.chat.id,
                                 message_id=callback_query.message.message_id,
                                 text=result_string,
-                                reply_markup=btn.inline_kb_edit1)
+                                reply_markup=btn.inline_kb_edit1_back)
 
 
 # @dp.message_handler()
@@ -562,6 +597,7 @@ async def job():
             answer_message = f"**NOTIFICATION**\n\n " \
                              + f'{stick_done} {stick_type} - {elem[1]}:\n{elem[3]}\n id:{elem[0]}'
             await bot.send_message(chat_id=ACCESS_ID, text=answer_message, reply_markup=btn.inline_kb_edit1)
+            # здесь тоже storage подключить
 
 
 # if notifications:
