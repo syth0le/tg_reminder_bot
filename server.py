@@ -12,7 +12,7 @@ import asyncio
 import datetime
 
 import create_reminder as ent
-from forms import FormTemp, FormPerm
+from forms import FormTemp, FormPerm, FormBookmark
 from middleware import AccessMiddleware
 import reminders
 import exceptions
@@ -212,6 +212,46 @@ async def process_frequency_perm(message: types.Message, state: FSMContext):
 
 
 #################################################################
+
+
+@dp.callback_query_handler(lambda c: c.data == 'btn_book')
+async def process_callback_btn_perm(callback_query: types.CallbackQuery):
+    await FormBookmark.title.set()
+    await bot.answer_callback_query(callback_query.id)
+    await bot.edit_message_text(chat_id=callback_query.message.chat.id,
+                                message_id=callback_query.message.message_id,
+                                text="Enter title of bookmark:",
+                                reply_markup=btn.inline_kb2)
+
+
+@dp.message_handler(state=FormBookmark.title)
+async def process_date_perm(message: types.Message, state: FSMContext):
+    async with state.proxy() as data:
+        data['title'] = message.text
+
+        answer = reminders.add_reminder(title=data['title'],
+                                        date=None,
+                                        category='book')
+
+        await bot.send_message(
+            message.chat.id,
+            answer,
+            reply_markup=btn.inline_kb_edit1
+        )
+        await bot.delete_message(
+            chat_id=message.chat.id,
+            message_id=message.message_id
+        )
+        await bot.delete_message(
+            chat_id=message.chat.id,
+            message_id=message.message_id - 1
+        )
+
+    await state.finish()
+
+
+#################################################################
+
 
 @dp.callback_query_handler(lambda c: c.data == 'btn_done')
 async def process_callback_btn_perm(callback_query: types.CallbackQuery):

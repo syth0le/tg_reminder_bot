@@ -32,10 +32,11 @@ anyRemindersMenu = ReplyKeyboardMarkup(resize_keyboard=True, row_width=1).add(bt
 # --- Inline Create Reminder buttons ---
 inline_btn_temp = InlineKeyboardButton('Temporary', callback_data='btn_temp')
 inline_btn_perm = InlineKeyboardButton('Permanent', callback_data='btn_perm')
+inline_btn_book = InlineKeyboardButton('Bookmark', callback_data='btn_book')
 inline_btn_cancel = InlineKeyboardButton('Cancel', callback_data='btn_cancel')
 inline_btn_cancel_adding = InlineKeyboardButton('Cancel', callback_data='cancel_adding')
 
-inline_kb1 = InlineKeyboardMarkup(row_width=2).add(inline_btn_temp, inline_btn_perm, inline_btn_cancel)
+inline_kb1 = InlineKeyboardMarkup(row_width=2).add(inline_btn_temp, inline_btn_perm).add(inline_btn_book).add(inline_btn_cancel)
 inline_kb2 = InlineKeyboardMarkup().add(inline_btn_cancel_adding)
 
 # --- Inline Editing Reminder status buttons ---

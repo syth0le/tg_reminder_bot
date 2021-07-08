@@ -18,7 +18,8 @@ def add_reminder(title: str,
     Returns modernized NamedTuple class which include all needful information about reminder.
     It can be temporary or permanent reminders and even bookmarks classes.
     """
-    date = parse(date, fuzzy=True)
+    if category != 'book':
+        date = parse(date, fuzzy=True)
     print(date)
     db.insert(
         'reminder',
