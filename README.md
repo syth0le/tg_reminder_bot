@@ -29,3 +29,7 @@ telegram bot with async realisation remind functional
     > API_TOKEN = 'your_API_TOKEN'
 * сохраняем файл и запускаем бота:
     > python server.py
+
+В будущем напишу shell скрипт для автоматического выполнения шагов.
+Приятного пользования!
+  

@@ -2,7 +2,7 @@ create table reminder (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name varchar(255),
     category varchar(255),
-    date_time datetime,
+    date_time datetime default NULL,
     is_done boolean default False,
     for_each int default 0
 );
