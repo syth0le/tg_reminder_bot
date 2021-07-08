@@ -21,7 +21,7 @@ def add_reminder(title: str,
     if category != 'book':
         date = parse(date, fuzzy=True)
     print(date)
-    db.insert(
+    reminder_add = db.insert(
         'reminder',
         {
             'name': title,
@@ -30,20 +30,22 @@ def add_reminder(title: str,
             'for_each': frequency
         }
     )
-    return _recognize_category(title=title, date=date, category=category, frequency=frequency)
+    print(reminder_add)
+    return _recognize_category(id=reminder_add[0], title=title, date=date, category=category, frequency=frequency)
 
 
-def _recognize_category(title: str,
+def _recognize_category(id:int,
+                        title: str,
                         date: str,
                         category: str,
                         frequency: int = 0,
                         is_done: bool = False) -> Union[TemporaryReminder, PermanentReminder, Bookmark]:
     if category == 'temp':
-        return TemporaryReminder(title=title, type=category, date=date, is_done=is_done)
+        return TemporaryReminder(id=id, title=title, type=category, date=date, is_done=is_done)
     elif category == 'perm':
-        return PermanentReminder(title=title, type=category, date=date, frequency=frequency, is_done=is_done)
+        return PermanentReminder(id=id, title=title, type=category, date=date, frequency=frequency, is_done=is_done)
     else:
-        return Bookmark(title=title, type=category, is_done=is_done)
+        return Bookmark(id=id, title=title, type=category, is_done=is_done)
 
 
 def get_all_reminders() -> list:
@@ -54,8 +56,6 @@ def get_all_reminders() -> list:
     cursor.execute(
         "select * from reminder order by date_time ASC limit 20 ")
     rows = cursor.fetchall()
-    if not rows:
-        return "No reminders in system"
     return rows
 
 
@@ -67,8 +67,6 @@ def get_permanent_reminders() -> list:
     cursor.execute(
         "select * from reminder where category = 'perm' order by date_time ASC limit 20 ")
     rows = cursor.fetchall()
-    if not rows:
-        return "No permanent reminders in system"
     return rows
 
 
@@ -80,8 +78,6 @@ def get_temporary_reminders() -> list:
     cursor.execute(
         "select * from reminder where category = 'temp' order by date_time ASC limit 20 ")
     rows = cursor.fetchall()
-    if not rows:
-        return "No temporary reminders in system"
     return rows
 
 
@@ -93,8 +89,6 @@ def get_bookmarks() -> list:
     cursor.execute(
         "select * from reminder where category = 'book' order by date_time ASC limit 20 ")
     rows = cursor.fetchall()
-    if not rows:
-        return "No bookmarks in system"
     return rows
 
 
@@ -111,10 +105,10 @@ def delete_reminder(row_id) -> object:
     Returns reminder which was deleted by user.
     """
     try:
-        title, category, date, is_done, frequency = db.delete('reminder', row_id)
+        id, title, category, date, is_done, frequency = db.delete('reminder', row_id)
     except exceptions.NotConsistInDB as e:
         return str(e)
-    return _recognize_category(title=title, date=date, category=category, frequency=frequency, is_done=is_done)
+    return _recognize_category(id=id, title=title, date=date, category=category, frequency=frequency, is_done=is_done)
 
 
 def done_reminder(row_id) -> object:
@@ -122,10 +116,10 @@ def done_reminder(row_id) -> object:
     Returns reminder which 'is_done' parameter was marked as True by user.
     """
     try:
-        title, category, date, is_done, frequency = db.update('reminder', row_id)
+        id, title, category, date, is_done, frequency = db.update('reminder', row_id)
     except exceptions.NotConsistInDB as e:
         return str(e)
-    return _recognize_category(title=title, date=date, category=category, frequency=frequency, is_done=is_done)
+    return _recognize_category(id=id, title=title, date=date, category=category, frequency=frequency, is_done=is_done)
 
 
 def _get_now_formatted() -> str:

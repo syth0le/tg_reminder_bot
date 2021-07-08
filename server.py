@@ -18,7 +18,7 @@ import reminders
 import exceptions
 import db
 import buttons as btn
-from utility import STICKER_DONE, STICKER_NOT_DONE
+from utility import STICKER_DONE, STICKER_NOT_DONE, stickers_recognize
 
 load_dotenv(override=True)
 
@@ -98,17 +98,20 @@ async def process_title_temp(message: types.Message, state: FSMContext):
 
 
 @dp.message_handler(state=FormTemp.date)
-async def process_date_perm(message: types.Message, state: FSMContext):
+async def process_date_temp(message: types.Message, state: FSMContext):
     async with state.proxy() as data:
         data['date'] = message.text
 
         answer = reminders.add_reminder(title=data['title'],
                                         date=data['date'],
                                         category='temp')
+        stick_done, stick_type = stickers_recognize(answer.is_done, answer.type)
+
+        answer_message = f'{stick_done} {stick_type} - {answer.title}:\n{answer.date}\n id:{answer.id}'
 
         await bot.send_message(
             message.chat.id,
-            answer,
+            answer_message,
             reply_markup=btn.inline_kb_edit1
         )
         await bot.delete_message(
@@ -187,10 +190,13 @@ async def process_frequency_perm(message: types.Message, state: FSMContext):
                                         date=data['date'],
                                         category='perm',
                                         frequency=data['frequency'])
+        stick_done, stick_type = stickers_recognize(answer.is_done, answer.type)
+
+        answer_message = f'{stick_done} {stick_type} - {answer.title}:\n{answer.date}\n id:{answer.id}'
 
         await bot.send_message(
             message.chat.id,
-            answer,
+            answer_message,
             reply_markup=btn.inline_kb_edit1
         )
         # await bot.edit_message_text(
@@ -215,7 +221,7 @@ async def process_frequency_perm(message: types.Message, state: FSMContext):
 
 
 @dp.callback_query_handler(lambda c: c.data == 'btn_book')
-async def process_callback_btn_perm(callback_query: types.CallbackQuery):
+async def process_callback_btn_book(callback_query: types.CallbackQuery):
     await FormBookmark.title.set()
     await bot.answer_callback_query(callback_query.id)
     await bot.edit_message_text(chat_id=callback_query.message.chat.id,
@@ -225,17 +231,20 @@ async def process_callback_btn_perm(callback_query: types.CallbackQuery):
 
 
 @dp.message_handler(state=FormBookmark.title)
-async def process_date_perm(message: types.Message, state: FSMContext):
+async def process_title_book(message: types.Message, state: FSMContext):
     async with state.proxy() as data:
         data['title'] = message.text
 
         answer = reminders.add_reminder(title=data['title'],
                                         date=None,
                                         category='book')
+        stick_done, stick_type = stickers_recognize(answer.is_done, answer.type)
+
+        answer_message = f'{stick_done} {stick_type} - {answer.title}\n id:{answer.id}'
 
         await bot.send_message(
             message.chat.id,
-            answer,
+            answer_message,
             reply_markup=btn.inline_kb_edit1
         )
         await bot.delete_message(
@@ -349,7 +358,7 @@ async def process_callback_btn_perm(callback_query: types.CallbackQuery):
                                 reply_markup=btn.inline_kb_edit1)
 
 
-@dp.message_handler(commands=['start', 'help'])
+@dp.message_handler(commands=['start', 'help', 'menu'])
 async def send_welcome(message: types.Message):
     """
     This handler will be called when user sends `/start` or `/help` command
@@ -397,21 +406,21 @@ async def show_all(message: types.Message):
     data = reminders.get_all_reminders()
     temp = 1
     result_string = ''
-
     await message.delete()
-    await message.answer("All reminders:", reply_markup=btn.anyRemindersMenu)
-    for elem in data:
-        inline_btn = InlineKeyboardButton(temp, callback_data=f"edit_{elem[0]}")
-        inline_kb_to_choose.insert(inline_btn)
+    if data:
+        await message.answer("All reminders:", reply_markup=btn.anyRemindersMenu)
+        for elem in data:
+            inline_btn = InlineKeyboardButton(temp, callback_data=f"edit_{elem[0]}")
+            inline_kb_to_choose.insert(inline_btn)
 
-        if elem[4]:
-            stick = STICKER_DONE
-        else:
-            stick = STICKER_NOT_DONE
-        result_string += f'{temp}) {stick} - {elem[1]} ({elem[2]}):\n{elem[3]}\n'
-        temp += 1
+            stick_done, stick_type = stickers_recognize(elem[4], elem[2])
 
-    await message.answer(result_string, reply_markup=inline_kb_to_choose)
+            result_string += f'{temp}) {stick_done} {stick_type} - {elem[1]}:\n{elem[3]}\n'
+            temp += 1
+
+        await message.answer(result_string, reply_markup=inline_kb_to_choose)
+    else:
+        await message.answer("No reminders in system.", reply_markup=btn.mainMenu)
 
 
 @dp.message_handler(lambda message: message.text.startswith('Permanent'))
@@ -424,19 +433,20 @@ async def show_permanent(message: types.Message):
     result_string = ''
 
     await message.delete()
-    await message.answer("Permanent reminders:", reply_markup=btn.anyRemindersMenu)
-    for elem in data:
-        inline_btn = InlineKeyboardButton(temp, callback_data=f"edit_{elem[0]}")
-        inline_kb_to_choose.insert(inline_btn)
+    if data:
+        await message.answer("Permanent reminders:", reply_markup=btn.anyRemindersMenu)
+        for elem in data:
+            inline_btn = InlineKeyboardButton(temp, callback_data=f"edit_{elem[0]}")
+            inline_kb_to_choose.insert(inline_btn)
 
-        if elem[4]:
-            stick = STICKER_DONE
-        else:
-            stick = STICKER_NOT_DONE
-        result_string += f'{temp}) {stick} - {elem[1]}:\n{elem[3]}\n'
-        temp += 1
+            stick_done, stick_type = stickers_recognize(elem[4], 'temp')
 
-    await message.answer(result_string, reply_markup=inline_kb_to_choose)
+            result_string += f'{temp}) {stick_done} {stick_type} - {elem[1]}:\n{elem[3]}\n'
+            temp += 1
+
+        await message.answer(result_string, reply_markup=inline_kb_to_choose)
+    else:
+        await message.answer("No permanent reminders in system.", reply_markup=btn.remindersMenu)
 
 
 @dp.message_handler(lambda message: message.text.startswith('Temporary'))
@@ -449,19 +459,18 @@ async def show_temporary(message: types.Message):
     result_string = ''
 
     await message.delete()
-    await message.answer("Temporary reminders:", reply_markup=btn.anyRemindersMenu)
-    for elem in data:
-        inline_btn = InlineKeyboardButton(temp, callback_data=f"edit_{elem[0]}")
-        inline_kb_to_choose.insert(inline_btn)
+    if data:
+        await message.answer("Temporary reminders:", reply_markup=btn.anyRemindersMenu)
+        for elem in data:
+            inline_btn = InlineKeyboardButton(temp, callback_data=f"edit_{elem[0]}")
+            inline_kb_to_choose.insert(inline_btn)
+            stick_done, stick_type = stickers_recognize(elem[4], 'temp')
+            result_string += f'{temp}) {stick_done} {stick_type} - {elem[1]}:\n{elem[3]}\n'
+            temp += 1
 
-        if elem[4]:
-            stick = STICKER_DONE
-        else:
-            stick = STICKER_NOT_DONE
-        result_string += f'{temp}) {stick} - {elem[1]}:\n{elem[3]}\n'
-        temp += 1
-
-    await message.answer(result_string, reply_markup=inline_kb_to_choose)
+        await message.answer(result_string, reply_markup=inline_kb_to_choose)
+    else:
+        await message.answer("No temporary reminders in system.", reply_markup=btn.remindersMenu)
 
 
 @dp.message_handler(lambda message: message.text.startswith('Bookmarks'))
@@ -474,19 +483,19 @@ async def show_permanent(message: types.Message):
     result_string = ''
 
     await message.delete()
-    await message.answer("Bookmarks:", reply_markup=btn.anyRemindersMenu)
-    for elem in data:
-        inline_btn = InlineKeyboardButton(temp, callback_data=f"edit_{elem[0]}")
-        inline_kb_to_choose.insert(inline_btn)
-        print(elem)
-        if elem[3]:
-            stick = STICKER_DONE
-        else:
-            stick = STICKER_NOT_DONE
-        result_string += f'{temp}) {stick} - {elem[1]}:\n{elem[3]}\n'
-        temp += 1
+    if data:
+        await message.answer("Bookmarks:", reply_markup=btn.anyRemindersMenu)
+        for elem in data:
+            inline_btn = InlineKeyboardButton(temp, callback_data=f"edit_{elem[0]}")
+            inline_kb_to_choose.insert(inline_btn)
+            print(elem)
+            stick_done, stick_type = stickers_recognize(elem[3], 'book')
+            result_string += f'{temp}) {stick_done} {stick_type} - {elem[1]}:\n{elem[3]}\n'
+            temp += 1
 
-    await message.answer(result_string, reply_markup=inline_kb_to_choose)
+        await message.answer(result_string, reply_markup=inline_kb_to_choose)
+    else:
+        await message.answer("No bookmarks in system.", reply_markup=btn.remindersMenu)
 
 
 @dp.message_handler(lambda message: message.text.startswith('Clean'))
@@ -515,11 +524,8 @@ async def cancel(message: types.Message):
 async def process_callback_kb1btn1(callback_query: types.CallbackQuery):
     id = callback_query.data[5:]
     reminder = db.find_by_id(table='reminder', id=id)
-    if reminder[4]:
-        stick = STICKER_DONE
-    else:
-        stick = STICKER_NOT_DONE
-    result_string = f'{stick} - {reminder[1]} ({reminder[2]}):\n{reminder[3]}\n id:{reminder[0]}'
+    stick_done, stick_type = stickers_recognize(reminder[3], reminder[2])
+    result_string = f'{stick_done} {stick_type} - {reminder[1]}:\n{reminder[3]}\n id:{reminder[0]}'
     await bot.edit_message_text(chat_id=callback_query.message.chat.id,
                                 message_id=callback_query.message.message_id,
                                 text=result_string,
@@ -540,19 +546,38 @@ async def process_callback_kb1btn1(callback_query: types.CallbackQuery):
 
 async def job():
     local_time = str(datetime.datetime.now())[:-9] + "00"
-    reminders = db.find_by_date('reminder', local_time)
+    print(datetime.datetime.now().timestamp())
+    print(datetime.datetime.now())
+    inline_kb_to_choose = InlineKeyboardMarkup(row_width=6)
+    temp = 1
+    result_string = ''
+    notifications = db.find_by_date('reminder', local_time)
 
-    if reminders:
-        print("notification", local_time)
+    if notifications:
+        for elem in notifications:
+            print(elem)
+            print(elem[3])
+            stick_done, stick_type = stickers_recognize(elem[4], elem[2])
 
-        last_reminders_rows = [
-            f"{reminder[1]} ({reminder[3]}) — нажми "
-            f"/done{reminder[0]} чтобы завершить "
-            for reminder in reminders]
-        answer_message = f"**NOTIFICATION**\n\n* " + "\n\n* " \
-            .join(last_reminders_rows)
+            answer_message = f"**NOTIFICATION**\n\n " \
+                             + f'{stick_done} {stick_type} - {elem[1]}:\n{elem[3]}\n id:{elem[0]}'
+            await bot.send_message(chat_id=ACCESS_ID, text=answer_message, reply_markup=btn.inline_kb_edit1)
 
-        await bot.send_message(chat_id=ACCESS_ID, text=answer_message)
+
+# if notifications:
+#     for elem in notifications:
+#         inline_btn = InlineKeyboardButton(temp, callback_data=f"edit_{elem[0]}")
+#         inline_kb_to_choose.insert(inline_btn)
+#         print(elem)
+#         if elem[3]:
+#             stick = STICKER_DONE
+#         else:
+#             stick = STICKER_NOT_DONE
+#         result_string += f'{temp}) {stick} - {elem[1]}:\n{elem[3]}\n'
+#         temp += 1
+#
+#     answer_message = f"**NOTIFICATION**\n\n* " + "\n\n* " + result_string
+#     await bot.send_message(chat_id=ACCESS_ID, text=answer_message, reply_markup=inline_kb_to_choose)
 
 
 async def scheduler():

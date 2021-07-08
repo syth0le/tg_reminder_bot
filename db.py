@@ -10,17 +10,20 @@ conn = sqlite3.connect(os.path.join("db", "reminders.db"))
 cursor = conn.cursor()
 
 
-def insert(table: str, column_values: Dict):
-    columns = ', '.join( column_values.keys() )
+def insert(table: str, column_values: Dict) -> object:
+    columns = ', '.join( column_values.keys())
     values = [tuple(column_values.values())]
-    placeholders = ", ".join( "?" * len(column_values.keys()) )
+    placeholders = ", ".join("?" * len(column_values.keys()))
     cursor.executemany(
         f"INSERT INTO {table} "
         f"({columns}) "
         f"VALUES ({placeholders})",
         values)
     conn.commit()
-    pass
+
+    cursor.execute(f"SELECT * FROM {table} ORDER BY id DESC")
+    row = cursor.fetchone()
+    return row
 
 
 def fetchall(table: str, columns: List[str]) -> List[Tuple]:
@@ -50,7 +53,7 @@ def delete(table: str, row_id: int) -> Tuple:
     else:
         cursor.execute(f"delete from {table} where id={row_id}")
         conn.commit()
-        return from_db_unpack(to_delete)
+        return from_db_unpack(to_delete, with_id=True)
 
 
 def update(table: str, row_id: int) -> Tuple:
@@ -62,7 +65,7 @@ def update(table: str, row_id: int) -> Tuple:
     updated = cursor.fetchone()
     if updated is None:
         raise exceptions.NotConsistInDB("this id db doesn't include")    
-    return from_db_unpack(updated)
+    return from_db_unpack(updated, with_id=True)
 
 
 def find_by_date(table: str, date: str) -> List[Tuple]:
@@ -71,17 +74,17 @@ def find_by_date(table: str, date: str) -> List[Tuple]:
     return rows
 
 
-def find_by_id(table:str, id: int):
+def find_by_id(table: str, id: int) -> object:
     cursor.execute(f"SELECT * FROM {table} WHERE id ={id}")
-    row = cursor.fetchall()
-    return row[0]
+    row = cursor.fetchone()
+    return row
 
 
-def get_cursor():
+def get_cursor() -> cursor:
     return cursor
 
 
-def from_db_unpack(obj, with_id: bool = False):
+def from_db_unpack(obj, with_id: bool = False) -> list:
     # print(obj, type(obj))
     id = obj[0]
     title = obj[1]
@@ -96,7 +99,7 @@ def from_db_unpack(obj, with_id: bool = False):
 
 
 
-def _init_db():
+def _init_db() -> None:
     """database initialization"""
     with open("createdb.sql", "r") as f:
         sql = f.read()
@@ -104,7 +107,7 @@ def _init_db():
     conn.commit()
 
 
-def check_db_exists():
+def check_db_exists() -> None:
     """checks db initialization, if not — makes initialization"""
     cursor.execute("SELECT name FROM sqlite_master "
                    "WHERE type='table' AND name='reminder'")
