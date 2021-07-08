@@ -29,12 +29,20 @@ def add_reminder(title: str,
             'for_each': frequency
         }
     )
+    return _recognize_category(title=title, date=date, category=category, frequency=frequency)
+
+
+def _recognize_category(title: str,
+                        date: str,
+                        category: str,
+                        frequency: int = 0,
+                        is_done: bool = False) -> Union[TemporaryReminder, PermanentReminder, Bookmark]:
     if category == 'temp':
-        return TemporaryReminder(title=title, type=category, date=date, is_done=False)
+        return TemporaryReminder(title=title, type=category, date=date, is_done=is_done)
     elif category == 'perm':
-        return PermanentReminder(title=title, type=category, date=date, frequency=frequency, is_done=False)
+        return PermanentReminder(title=title, type=category, date=date, frequency=frequency, is_done=is_done)
     else:
-        return Bookmark(title=title, type=category, is_done=False)
+        return Bookmark(title=title, type=category, is_done=is_done)
 
 
 def get_all_reminders() -> list:
@@ -102,10 +110,10 @@ def delete_reminder(row_id) -> object:
     Returns reminder which was deleted by user.
     """
     try:
-        deleted = db.delete('reminder', row_id)
+        title, category, date, is_done, frequency = db.delete('reminder', row_id)
     except exceptions.NotConsistInDB as e:
         return str(e)
-    return deleted
+    return _recognize_category(title=title, date=date, category=category, frequency=frequency, is_done=is_done)
 
 
 def done_reminder(row_id) -> object:
@@ -113,10 +121,10 @@ def done_reminder(row_id) -> object:
     Returns reminder which 'is_done' parameter was marked as True by user.
     """
     try:
-        done_reminder = db.update('reminder', row_id)
+        title, category, date, is_done, frequency = db.update('reminder', row_id)
     except exceptions.NotConsistInDB as e:
         return str(e)
-    return done_reminder
+    return _recognize_category(title=title, date=date, category=category, frequency=frequency, is_done=is_done)
 
 
 def _get_now_formatted() -> str:

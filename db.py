@@ -45,13 +45,13 @@ def delete(table: str, row_id: int) -> Tuple:
     row_id = int(row_id)
     cursor.execute(f"SELECT * FROM {table} where id={row_id}")
     to_delete = cursor.fetchone()
-
     if to_delete is None:
         raise exceptions.NotConsistInDB("this id db doesn't include")
     else:
         cursor.execute(f"delete from {table} where id={row_id}")
         conn.commit()
-        return to_delete
+        return from_db_unpack(to_delete)
+
 
 def update(table: str, row_id: int) -> Tuple:
     row_id = int(row_id)
@@ -62,7 +62,7 @@ def update(table: str, row_id: int) -> Tuple:
     updated = cursor.fetchone()
     if updated is None:
         raise exceptions.NotConsistInDB("this id db doesn't include")    
-    return updated
+    return from_db_unpack(updated)
 
 
 def find_by_date(table: str, date: str) -> List[Tuple]:
@@ -79,6 +79,21 @@ def find_by_id(table:str, id: int):
 
 def get_cursor():
     return cursor
+
+
+def from_db_unpack(obj, with_id: bool = False):
+    # print(obj, type(obj))
+    id = obj[0]
+    title = obj[1]
+    category = obj[2]
+    date = obj[3]
+    is_done = obj[4]
+    frequency = obj[5]
+    if with_id:
+        return id, title, category, date, is_done, frequency
+    else:
+        return title, category, date, is_done, frequency
+
 
 
 def _init_db():

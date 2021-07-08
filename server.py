@@ -5,6 +5,7 @@ from aiogram import Bot, Dispatcher, executor, types
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.dispatcher import FSMContext
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+from aiogram.utils.exceptions import MessageNotModified
 from dotenv import load_dotenv
 import aioschedule
 import asyncio
@@ -219,18 +220,21 @@ async def process_callback_btn_perm(callback_query: types.CallbackQuery):
     text = str(callback_query.message.text)
     row_id = int(text.split('id:')[1])
     reminder = reminders.done_reminder(row_id)
-    if reminder[4] == 0:
+    if reminder.is_done == 0:
         await bot.edit_message_text(chat_id=callback_query.message.chat.id,
                                     message_id=callback_query.message.message_id,
                                     text=callback_query.message.text,
-                                    reply_markup=btn.inline_kb_edit2)
+                                    reply_markup=btn.inline_kb_edit1)
     else:
         done_text = text.split(' - ')[1]
         result_string = STICKER_DONE + ' - ' + done_text
-        await bot.edit_message_text(chat_id=callback_query.message.chat.id,
-                                    message_id=callback_query.message.message_id,
-                                    text=result_string,
-                                    reply_markup=btn.inline_kb_edit2)
+        try:
+            await bot.edit_message_text(chat_id=callback_query.message.chat.id,
+                                        message_id=callback_query.message.message_id,
+                                        text=result_string,
+                                        reply_markup=btn.inline_kb_edit1)
+        except MessageNotModified:
+            pass
 
 
 @dp.callback_query_handler(lambda c: c.data == 'btn_delete')
@@ -239,10 +243,14 @@ async def process_callback_btn_perm(callback_query: types.CallbackQuery):
     text = str(callback_query.message.text)
     row_id = int(text.split('id:')[1])
     reminder = reminders.delete_reminder(row_id)
-    result_string = f'Reminder "{reminder[1]}" was deleted'
+    # print(reminder)
+    result_string = f'Reminder "{reminder.title}" was deleted'
     await bot.answer_callback_query(callback_query.id, text=result_string)
     await bot.delete_message(chat_id=callback_query.message.chat.id,
                              message_id=callback_query.message.message_id)
+    await bot.send_message(chat_id=callback_query.message.chat.id,
+                           text="Choose in menu:",
+                           reply_markup=btn.mainMenu)
     # Доделать появление списка при удалении
 
 
