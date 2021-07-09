@@ -13,6 +13,13 @@ STICKER_BOOKMARK_2 = '📒'
 
 def stickers_recognize(data_done: bool, data_type: str):
     stick_done = STICKER_DONE if data_done else STICKER_NOT_DONE
+    # if isinstance(data_done, str):
+    #     stick_done = STICKER_DONE if data_done else STICKER_NOT_DONE
+    # elif isinstance(data_done, bool):
+    #     stick_done = STICKER_DONE if data_done else STICKER_NOT_DONE
+    # else:
+    #     stick_done = STICKER_DONE if data_done else STICKER_NOT_DONE
+    print(data_done, type(data_done))
     if data_type == 'perm':
         stick_type = STICKER_PERMANENT
     elif data_type == 'temp':
@@ -26,7 +33,7 @@ class TemporaryReminder(NamedTuple):
     id: int
     title: str
     type: str
-    is_done: str
+    is_done: bool
     date: str
 
 
@@ -34,7 +41,7 @@ class PermanentReminder(NamedTuple):
     id: int
     title: str
     type: str
-    is_done: str
+    is_done: bool
     frequency: int  #hours
     date: str
 
@@ -43,4 +50,4 @@ class Bookmark(NamedTuple):
     id: int
     title: str
     type: str
-    is_done: str
+    is_done: bool
