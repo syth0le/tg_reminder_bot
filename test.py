@@ -1,4 +1,7 @@
+import locale
 import os
+import sys
+
 from dotenv import load_dotenv
 import sqlite3
 import locale
@@ -23,10 +26,6 @@ def test(table: str):
         print(row)
         print(row[0], row[4])
         print(stickers_recognize(row[4], row[2]))
-    print(sqlite3.sqlite_version) 
-#  cursor.execute(f"SELECT * FROM sqlite_schema")
- #   rows = cursor.fetchall()
-#    print(rows)
 test("reminder")
 print(sys.getfilesystemencoding())
 print(locale.getpreferredencoding())
