@@ -469,7 +469,7 @@ async def show_permanent(message: types.Message):
 
             stick_done, stick_type = stickers_recognize(elem[4], 'temp')
 
-            result_string += f'{temp}) {stick_done} {stick_type} - {elem[1]}:\n{elem[3]}\n{elem[3]}\n'
+            result_string += f'{temp}) {stick_done} {stick_type} - {elem[1]}:\n{elem[3]}\n{elem[5]}\n'
             temp += 1
 
         await message.answer(result_string, reply_markup=inline_kb_to_choose)
