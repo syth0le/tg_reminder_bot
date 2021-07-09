@@ -3,7 +3,7 @@ create table reminder (
     name varchar(255),
     category varchar(255),
     date_time datetime default NULL,
-    is_done boolean default False,
+    is_done BIT default False,
     for_each int default 0
 );
 

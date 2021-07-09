@@ -13,6 +13,7 @@ STICKER_BOOKMARK_2 = '📒'
 
 def stickers_recognize(data_done: bool, data_type: str):
     stick_done = STICKER_DONE if data_done else STICKER_NOT_DONE
+    print(data_done, type(data_done))
     if data_type == 'perm':
         stick_type = STICKER_PERMANENT
     elif data_type == 'temp':
