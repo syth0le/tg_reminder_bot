@@ -40,7 +40,7 @@ def fetchall(table: str, columns: List[str]) -> List[Tuple]:
 
 
 def clean_done(table: str) -> None:
-    cursor.execute(f"delete from {table} where is_done = 1")
+    cursor.execute(f"delete from {table} where is_done = True")
     conn.commit()
 
 
@@ -58,7 +58,7 @@ def delete(table: str, row_id: int) -> Tuple:
 
 def update(table: str, row_id: int) -> Tuple:
     row_id = int(row_id)
-    cursor.execute(f"UPDATE {table} SET is_done=True where id={row_id}")
+    cursor.execute(f"UPDATE {table} SET is_done=1 where id={row_id}")
     conn.commit()
 
     cursor.execute(f"SELECT * FROM {table} where id={row_id}")
