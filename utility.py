@@ -16,7 +16,6 @@ def stickers_recognize(data_done: bool, data_type: str):
     # stick_done = STICKER_DONE if bool(data_done) else STICKER_NOT_DONE
     if isinstance(data_done, str):
         if data_done == 'True':
-
             stick_done = STICKER_DONE
         else:
             stick_done = STICKER_NOT_DONE

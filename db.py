@@ -64,7 +64,7 @@ def update(table: str, row_id: int) -> Tuple:
     cursor.execute(f"SELECT * FROM {table} where id={row_id}")
     updated = cursor.fetchone()
     if updated is None:
-        raise exceptions.NotConsistInDB("this id db doesn't include")    
+        raise exceptions.NotConsistInDB("this id db doesn't include")
     return from_db_unpack(updated, with_id=True)
 
 
