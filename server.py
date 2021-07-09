@@ -595,8 +595,10 @@ async def job():
 
     if notifications:
         for elem in notifications:
-            print(elem)
-            print(elem[3])
+            # print(elem)
+            # print(elem[3])
+            if elem[2] == 'perm':
+                db.extend_by_id(table='reminder', row_id=elem[0], date=elem[3], frequency=elem[5])
             stick_done, stick_type = stickers_recognize(elem[4], elem[2])
 
             answer_message = f"**NOTIFICATION**\n\n" \

@@ -20,7 +20,7 @@ def add_reminder(title: str,
     """
     if category != 'book':
         date = parse(date, fuzzy=True)
-    print(date)
+    print(date, type(date))
     reminder_add = db.insert(
         'reminder',
         {

@@ -1,4 +1,7 @@
 import os
+from datetime import datetime, timedelta
+from time import strptime
+from dateutil.parser import parse
 from typing import Dict, List, Tuple
 
 import sqlite3
@@ -66,6 +69,19 @@ def update(table: str, row_id: int) -> Tuple:
     if updated is None:
         raise exceptions.NotConsistInDB("this id db doesn't include")
     return from_db_unpack(updated, with_id=True)
+
+
+def extend_by_id(table: str, row_id: int, date: str, frequency: int) -> None:
+    row_id = int(row_id)
+    frequency = timedelta(minutes=frequency)
+    temp = date.split(" ")
+    hours, minutes, seconds = map(int, temp[1].split(":"))
+    date = timedelta(hours=hours, minutes=minutes, seconds=seconds)
+    date = temp[0] + ' ' + str(date+frequency)
+    date = parse(date, fuzzy=True)
+    print(date, type(date))
+    cursor.execute(f"UPDATE {table} SET date_time = :date where id={row_id}", {'date': date})
+    conn.commit()
 
 
 def find_by_date(table: str, date: str) -> List[Tuple]:
