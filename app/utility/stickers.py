@@ -1,5 +1,3 @@
-from typing import NamedTuple
-
 STICKER_DONE = '✅'
 STICKER_NOT_DONE = '❌'
 STICKER_BELL = '🔔'
@@ -31,27 +29,3 @@ def stickers_recognize(data_done: bool, data_type: str):
     else:
         stick_type = STICKER_BOOKMARK
     return stick_done, stick_type
-
-
-class TemporaryReminder(NamedTuple):
-    id: int
-    title: str
-    type: str
-    is_done: bool
-    date: str
-
-
-class PermanentReminder(NamedTuple):
-    id: int
-    title: str
-    type: str
-    is_done: bool
-    frequency: int  #hours
-    date: str
-
-
-class Bookmark(NamedTuple):
-    id: int
-    title: str
-    type: str
-    is_done: bool

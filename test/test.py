@@ -9,7 +9,7 @@ import sys
 import exceptions
 from utility import stickers_recognize
 
-conn = sqlite3.connect(os.path.join("db", "reminders.db"))
+conn = sqlite3.connect(os.path.join("../db", "reminders.db"))
 cursor = conn.cursor()
 
 load_dotenv()
