@@ -113,7 +113,8 @@ def from_db_unpack(obj, with_id: bool = False) -> list:
 
 def _init_db() -> None:
     """database initialization"""
-    with open("createdb.sql", "r") as f:
+    file = os.path.join("db", "createdb.sql")
+    with open(file, "r") as f:
         sql = f.read()
     cursor.executescript(sql)
     conn.commit()
