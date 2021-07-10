@@ -17,13 +17,11 @@ telegram bot with async realisation remind functional
     >$ source venv/bin/activate
     > 
     >$ pip install -r requirements.txt
-    > 
-    >$ mkdir db
-    >
+* Cоздаем файл с переменными необходимыми в работе бота:
     >$ touch .env
     > 
     >$ sudo nano .env
-* в открытом окошке редактирования файла .env заполните его так:
+  * в открытом окошке редактирования файла .env заполните его так:
     > ACCESS_ID = 'user_id'
     > 
     > API_TOKEN = 'your_API_TOKEN'
