@@ -1,20 +1,17 @@
 import os
-from datetime import datetime, timedelta
-from time import strptime
+import sqlite3
+from datetime import timedelta
 from dateutil.parser import parse
 from typing import Dict, List, Tuple
 
-import sqlite3
-
-import exceptions
-
+from app import exceptions
 
 conn = sqlite3.connect(os.path.join("db", "reminders.db"))
 cursor = conn.cursor()
 
 
 def insert(table: str, column_values: Dict) -> object:
-    columns = ', '.join( column_values.keys())
+    columns = ', '.join(column_values.keys())
     values = [tuple(column_values.values())]
     placeholders = ", ".join("?" * len(column_values.keys()))
     cursor.executemany(
@@ -77,7 +74,7 @@ def extend_by_id(table: str, row_id: int, date: str, frequency: int) -> None:
     temp = date.split(" ")
     hours, minutes, seconds = map(int, temp[1].split(":"))
     date = timedelta(hours=hours, minutes=minutes, seconds=seconds)
-    date = temp[0] + ' ' + str(date+frequency)
+    date = temp[0] + ' ' + str(date + frequency)
     date = parse(date, fuzzy=True)
     print(date, type(date))
     cursor.execute(f"UPDATE {table} SET date_time = :date where id={row_id}", {'date': date})
@@ -114,7 +111,6 @@ def from_db_unpack(obj, with_id: bool = False) -> list:
         return title, category, date, is_done, frequency
 
 
-
 def _init_db() -> None:
     """database initialization"""
     with open("createdb.sql", "r") as f:
@@ -131,5 +127,6 @@ def check_db_exists() -> None:
     if table_exists:
         return
     _init_db()
+
 
 check_db_exists()

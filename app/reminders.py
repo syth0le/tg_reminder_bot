@@ -1,12 +1,10 @@
-from typing import NamedTuple
 import datetime
 import pytz
 from dateutil.parser import parse
 from typing import Union
 
-import exceptions
-import db
-from utility import TemporaryReminder, PermanentReminder, Bookmark
+from app import db, exceptions
+from app.utility.schemas import TemporaryReminder, PermanentReminder, Bookmark
 
 
 def add_reminder(title: str,
@@ -34,7 +32,7 @@ def add_reminder(title: str,
     return _recognize_category(id=reminder_add[0], title=title, date=date, category=category, frequency=frequency)
 
 
-def _recognize_category(id:int,
+def _recognize_category(id: int,
                         title: str,
                         date: str,
                         category: str,
