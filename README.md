@@ -1,7 +1,6 @@
 # tg_reminder_bot
 telegram bot with async realisation remind functional
 
-<img src="https://raw.githubusercontent.com/syth0le/tg_reminder_bot/main/screenshots/create.gif" alt="create"/>
 | | |
 |------------|-------------|
 |<img src="https://raw.githubusercontent.com/syth0le/tg_reminder_bot/main/screenshots/create.gif" alt="create"/>|<img src="https://raw.githubusercontent.com/syth0le/tg_reminder_bot/main/screenshots/reminder.gif" alt="reminder"/>|
