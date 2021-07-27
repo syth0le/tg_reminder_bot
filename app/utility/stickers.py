@@ -1,3 +1,5 @@
+from typing import Tuple
+
 STICKER_DONE = '✅'
 STICKER_NOT_DONE = '❌'
 STICKER_BELL = '🔔'
@@ -9,7 +11,7 @@ STICKER_REPEAT = '♻️'
 STICKER_BOOKMARK_2 = '📒'
 
 
-def stickers_recognize(data_done: bool, data_type: str):
+def stickers_recognize(data_done: bool, data_type: str) -> Tuple[str, str]:
     # data_done = bool(data_done)
     # stick_done = STICKER_DONE if bool(data_done) else STICKER_NOT_DONE
     if isinstance(data_done, str):
