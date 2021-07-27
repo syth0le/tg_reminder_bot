@@ -10,6 +10,7 @@ from app.settings.tokens import ACCESS_ID
 from app.utility.answer_forms import answer_forms
 from app.utility.forms import FormTemp, FormPerm, FormBookmark
 from app.handlers import handlers_buttons as hand_btn, handlers_callbacks as hand_clb
+from app.utility.list_back_access import back_access
 
 
 @dp.message_handler(lambda message: message.text.startswith('Create'))
@@ -232,10 +233,11 @@ async def process_callback_btn_edit_frq(callback_query: types.CallbackQuery):
 async def process_callback_btn_back_list(callback_query: types.CallbackQuery):
     try:
         data = await storage.get_data(chat=ACCESS_ID)
+        message, markup = await back_access(data=data)
         await hand_clb.edit_callback_message(bot=bot,
                                              callback_query=callback_query,
-                                             data=data['text'],
-                                             markup=data['markup'])
+                                             data=message,
+                                             markup=markup)
     except KeyError:
         await hand_clb.send_callback_answer(bot=bot,
                                             callback_query=callback_query,
@@ -291,7 +293,8 @@ async def show_all(message: types.Message):
     """Show all reminders in system."""
     result_string, inline_kb_to_choose = await handler_show_all(message=message)
     await storage.set_data(chat=ACCESS_ID, data={"text": result_string,
-                                                 "markup": inline_kb_to_choose})
+                                                 "markup": inline_kb_to_choose,
+                                                 "type": "all"})
 
 
 @dp.message_handler(lambda message: message.text.startswith('Permanent'))
@@ -301,7 +304,8 @@ async def show_permanent(message: types.Message):
     result_string, inline_kb_to_choose = await handler_show_permanent(message=message)
 
     await storage.set_data(chat=ACCESS_ID, data={"text": result_string,
-                                                 "markup": inline_kb_to_choose})
+                                                 "markup": inline_kb_to_choose,
+                                                 "type": "perm"})
 
 
 @dp.message_handler(lambda message: message.text.startswith('Temporary'))
@@ -310,7 +314,8 @@ async def show_temporary(message: types.Message):
     """Show all temporary reminders in system."""
     result_string, inline_kb_to_choose = await handler_show_temporary(message=message)
     await storage.set_data(chat=ACCESS_ID, data={"text": result_string,
-                                                 "markup": inline_kb_to_choose})
+                                                 "markup": inline_kb_to_choose,
+                                                 "type": "temp"})
 
 
 @dp.message_handler(lambda message: message.text.startswith('Bookmarks'))
@@ -319,7 +324,8 @@ async def show_bookmarks(message: types.Message):
     """Show all bookmarks in system."""
     result_string, inline_kb_to_choose = await handler_show_bookmarks(message=message)
     await storage.set_data(chat=ACCESS_ID, data={"text": result_string,
-                                                 "markup": inline_kb_to_choose})
+                                                 "markup": inline_kb_to_choose,
+                                                 "type": "book"})
 
 
 @dp.message_handler(lambda message: message.text.startswith('Clean'))

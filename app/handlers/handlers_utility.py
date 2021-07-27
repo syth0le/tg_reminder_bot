@@ -7,14 +7,15 @@ from app.buttons.reply_btns import remindersMenu, anyRemindersMenu
 from app.utility.answer_forms import answer_forms
 
 
-async def handler_show_all(message: Message) -> Tuple[str, InlineKeyboardMarkup]:
+async def handler_show_all(message: Message, show_header: bool = True) -> Tuple[str, InlineKeyboardMarkup]:
     inline_kb_to_choose = InlineKeyboardMarkup(row_width=6)
     data = reminders.get_all_reminders()
     temp = 1
     result_string = ''
     await message.delete()
     if data:
-        await message.answer("All reminders:", reply_markup=anyRemindersMenu)
+        if show_header:
+            await message.answer("All reminders:", reply_markup=anyRemindersMenu)
         for elem in data:
             inline_btn = InlineKeyboardButton(temp, callback_data=f"edit_{elem[0]}")
             inline_kb_to_choose.insert(inline_btn)
@@ -28,7 +29,7 @@ async def handler_show_all(message: Message) -> Tuple[str, InlineKeyboardMarkup]
     return result_string, inline_kb_to_choose
 
 
-async def handler_show_permanent(message: Message) -> Tuple[str, InlineKeyboardMarkup]:
+async def handler_show_permanent(message: Message, show_header: bool = True) -> Tuple[str, InlineKeyboardMarkup]:
     inline_kb_to_choose = InlineKeyboardMarkup(row_width=6)
     data = reminders.get_permanent_reminders()
     temp = 1
@@ -36,7 +37,8 @@ async def handler_show_permanent(message: Message) -> Tuple[str, InlineKeyboardM
 
     await message.delete()
     if data:
-        await message.answer("Permanent reminders:", reply_markup=anyRemindersMenu)
+        if show_header:
+            await message.answer("Permanent reminders:", reply_markup=anyRemindersMenu)
         for elem in data:
             inline_btn = InlineKeyboardButton(temp, callback_data=f"edit_{elem[0]}")
             inline_kb_to_choose.insert(inline_btn)
@@ -50,7 +52,7 @@ async def handler_show_permanent(message: Message) -> Tuple[str, InlineKeyboardM
     return result_string, inline_kb_to_choose
 
 
-async def handler_show_temporary(message: Message) -> Tuple[str, InlineKeyboardMarkup]:
+async def handler_show_temporary(message: Message, show_header: bool = True) -> Tuple[str, InlineKeyboardMarkup]:
     inline_kb_to_choose = InlineKeyboardMarkup(row_width=6)
     data = reminders.get_temporary_reminders()
     temp = 1
@@ -58,7 +60,8 @@ async def handler_show_temporary(message: Message) -> Tuple[str, InlineKeyboardM
 
     await message.delete()
     if data:
-        await message.answer("Temporary reminders:", reply_markup=anyRemindersMenu)
+        if show_header:
+            await message.answer("Temporary reminders:", reply_markup=anyRemindersMenu)
         for elem in data:
             inline_btn = InlineKeyboardButton(temp, callback_data=f"edit_{elem[0]}")
             inline_kb_to_choose.insert(inline_btn)
@@ -72,7 +75,7 @@ async def handler_show_temporary(message: Message) -> Tuple[str, InlineKeyboardM
     return result_string, inline_kb_to_choose
 
 
-async def handler_show_bookmarks(message: Message) -> Tuple[str, InlineKeyboardMarkup]:
+async def handler_show_bookmarks(message: Message, show_header: bool = True) -> Tuple[str, InlineKeyboardMarkup]:
     inline_kb_to_choose = InlineKeyboardMarkup(row_width=6)
     data = reminders.get_bookmarks()
     temp = 1
@@ -80,7 +83,8 @@ async def handler_show_bookmarks(message: Message) -> Tuple[str, InlineKeyboardM
 
     await message.delete()
     if data:
-        await message.answer("Bookmarks:", reply_markup=anyRemindersMenu)
+        if show_header:
+            await message.answer("Bookmarks:", reply_markup=anyRemindersMenu)
         for elem in data:
             inline_btn = InlineKeyboardButton(temp, callback_data=f"edit_{elem[0]}")
             inline_kb_to_choose.insert(inline_btn)
